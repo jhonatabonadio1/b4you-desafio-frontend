@@ -1,31 +1,26 @@
-import * as React from "react"
+import * as React from "react";
 import {
   FileText,
+  Flame,
   GalleryVerticalEnd,
-  Rocket,
-  
-  ChartColumnDecreasing,
-  Settings
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMenu } from "@/components/nav-menu"
-import { NavUser } from "@/components/nav-user"
-import { ProjectSwitcher } from "@/components/project-switcher"
+import { NavMenu } from "@/components/nav-menu";
+import { NavUser } from "@/components/nav-user";
+
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
+  useSidebar,
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { Icons } from "./icons";
 
 // This is sample data.
 const data = {
-  user: {
-    name: "Jhonata Bonadio",
-    email: "jhonbonadio@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   projects: [
     {
       name: "INITECH INFORMÁTICA LTDA",
@@ -35,41 +30,42 @@ const data = {
   ],
   menu: [
     {
-      name: "Meus PDFs",
-      url: "#",
+      name: "Meus Documentos",
+      url: "/documents",
       icon: FileText,
     },
     {
-      name: "Métricas",
-      url: "#",
-      icon: ChartColumnDecreasing,
+      name: "Mapa de calor",
+      url: "/heatmaps",
+      icon: Flame,
     },
-    {
-      name: "Integrações",
-      url: "#",
-      icon: Rocket,
-    },
-    {
-      name: "Configuraçoes",
-      url: "#",
-      icon: Settings,
-    }
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { state } = useSidebar();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <ProjectSwitcher projects={data.projects} />
+        <div className={`${state === "expanded" && "p-2"}`}>
+          <Link href="/" className="flex items-center gap-2">
+            <Icons.logo className="h-8 w-8" />
+            {state === "expanded" && (
+              <span className=" font-bold lg:inline-block text-lg">
+                Incorporae!
+              </span>
+            )}
+          </Link>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         <NavMenu menu={data.menu} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

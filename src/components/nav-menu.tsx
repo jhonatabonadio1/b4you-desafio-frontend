@@ -7,6 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useRouter } from "next/router";
 
 export function NavMenu({
   menu,
@@ -17,13 +18,14 @@ export function NavMenu({
     icon: LucideIcon;
   }[];
 }) {
+  const route = useRouter();
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Menu</SidebarGroupLabel>
+      <SidebarGroupLabel>Visão geral</SidebarGroupLabel>
       <SidebarMenu>
         {menu.map((item) => (
           <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton asChild>
+            <SidebarMenuButton asChild isActive={route.pathname === item.url}>
               <a href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>

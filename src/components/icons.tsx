@@ -5,7 +5,7 @@ export const Icons = {
   logo: (props: IconProps) => (
     <svg viewBox="0 0 287 175" xmlns="http://www.w3.org/2000/svg" {...props}>
       <circle cx="87.5" cy="87.5" r="87.5" fill="currentColor"/>
-      <circle cx="199.5" cy="87.5" r="87.5"  fill-opacity="0.2" fill="currentColor"/>
+      <circle cx="199.5" cy="87.5" r="87.5"  fillOpacity="0.7" fill="currentColor"/>
     </svg>
   ),
   twitter: (props: IconProps) => (

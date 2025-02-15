@@ -15,7 +15,7 @@ import { CheckIcon } from "lucide-react";
 import React, { useState } from "react";
 
 export function PricingSectionCards() {
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   const pricingPlans = [
     {
@@ -127,7 +127,7 @@ export function PricingSectionCards() {
                     <span className="text-xl mt-1">/mês</span>
                   </span>
                   {isAnnual && (
-                    <CardDescription className="text-center w-10/12 mx-auto pb-2">
+                    <CardDescription className="text-center text-primary w-10/12 mx-auto pb-2">
                       Você paga {plan.price.annual} por ano
                     </CardDescription>
                   )}
