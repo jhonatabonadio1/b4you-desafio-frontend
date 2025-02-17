@@ -16,8 +16,6 @@ export default function View() {
 
   const { docId } = router.query;
 
-
-
   const [pdfUrl, setPdfUrl] = useState("false")
   const [isLoading, setIsLoading] = useState(true);
   
@@ -39,6 +37,8 @@ export default function View() {
     }
     fetchPdf();
   }, [docId]);
+
+  /** POSSO DEFINIR UM USERAGENT LOCAL (SALVAR NO LOCALSTORAGE O ID DO NAVEGADOR, SE NÃO EXISTIR, CADASTRA UM.) */
 
 
   return (

@@ -19,40 +19,43 @@ interface PagesProps {
   page: number;
 }
 
-interface LoteProps {
-  x: number;
-  y: number;
-  value: number;
-  page: number;
-  pageWidth: number;
-  pageHeight: number;
-}
-
 export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [isPageRendered, setIsPageRendered] = useState(false);
   const [pages, setPages] = useState<PagesProps[]>([]);
-  const [loteHeatmaps, setLoteHeatmaps] = useState<LoteProps[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
-
-  const [scale, setScale] = useState(1); // Escala do PDF renderizado
+  const [scale, setScale] = useState(1);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLCanvasElement>(null);
 
-  // Atualiza as dimensões do container
+  useEffect(() => {
+    console.log("[INIT] Resetando localStorage e heatmaps...");
+    sessionStorage.removeItem("heatmaps");
+    createSession();
+  }, []);
+
+  async function createSession() {
+    try {
+      console.log("[SESSION] Criando sessão...");
+      const response = await api.post("/sessions", { docId });
+      setSessionId(response.data.sessionId);
+    } catch (error) {
+      console.log("[SESSION] Erro ao criar sessão:", error);
+    }
+  }
+
   useEffect(() => {
     function updateContainerWidth() {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.clientWidth);
-
       }
     }
 
     updateContainerWidth();
     window.addEventListener("resize", updateContainerWidth);
-
     return () => window.removeEventListener("resize", updateContainerWidth);
   }, []);
 
@@ -64,7 +67,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
 
     for (let i = 1; i <= pdf.numPages; i++) {
       const pageObj = await pdf.getPage(i);
-      const viewport = pageObj.getViewport({ scale: 1 }); // Tamanho real do PDF
+      const viewport = pageObj.getViewport({ scale: 1 });
 
       pageWithDimensions.push({
         width: viewport.width,
@@ -75,11 +78,9 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
 
     setPages(pageWithDimensions);
 
-    // Atualiza a escala com base no tamanho real do PDF e do container
     if (containerRef.current && pageWithDimensions.length > 0) {
       const { width } = pageWithDimensions[0];
-      const newScale = containerRef.current.clientWidth / width;
-      setScale(newScale);
+      setScale(containerRef.current.clientWidth / width);
     }
   }
 
@@ -92,14 +93,11 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   }, [pageNumber]);
 
   function prevPage() {
-    if (pageNumber > 1) {
-      setPageNumber((prev) => prev - 1);
-    }
+    if (pageNumber > 1) setPageNumber((prev) => prev - 1);
   }
+
   function nextPage() {
-    if (numPages && pageNumber < numPages) {
-      setPageNumber((prev) => prev + 1);
-    }
+    if (numPages && pageNumber < numPages) setPageNumber((prev) => prev + 1);
   }
 
   // Capturar os movimentos do mouse corretamente
@@ -108,6 +106,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
 
     const handleMouseMove = throttle((e: MouseEvent) => {
       if (!pageRef.current) return;
+
       const rect = pageRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -115,44 +114,63 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
       const currentPage = pages.find((p) => p.page === pageNumber);
       if (!currentPage) return;
 
-      // **🔴 Reverter a escala para capturar coordenadas no tamanho real do PDF**
       const originalX = x / scale;
       const originalY = y / scale;
 
-      setLoteHeatmaps((prevHeatmaps) => [
-        ...prevHeatmaps,
-        {
-          x: originalX,
-          y: originalY,
-          value: 1,
-          pageWidth: currentPage.width,
-          pageHeight: currentPage.height,
-          page: pageNumber,
-        },
-      ]);
+      const newHeatmapData = {
+        x: originalX,
+        y: originalY,
+        value: 1,
+        pageWidth: currentPage.width,
+        pageHeight: currentPage.height,
+        page: pageNumber,
+      };
+
+      const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
+      heatmaps.push(newHeatmapData);
+      sessionStorage.setItem("heatmaps", JSON.stringify(heatmaps));
     }, 300);
 
     pageRef.current.addEventListener("mousemove", handleMouseMove);
-    return () => {
+    return () =>
       pageRef.current?.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [pageRef.current, pageNumber, pages, scale]); // Adiciona `scale` para atualizar corretamente
+  }, [pageRef.current, pageNumber, pages, scale]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isPageRendered) {
+      console.log("Intervalo iniciado")
+      interval = setInterval(enviaLote, 60000);
+    }
+    return () => clearInterval(interval);
+  }, [isPageRendered]);
 
   async function enviaLote() {
-    try {
-      await api.post("/heatmaps/lote", {
-        docId,
-        lote: loteHeatmaps,
-      });
+    const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
+    if (heatmaps.length === 0 || !sessionId) {
+      console.log("[HEATMAP] Nenhum dado para enviar ou sessionId ausente.");
+      return;
+    }
 
-      window.alert("Lote enviado com sucesso");
+    try {
+      console.log("[HEATMAP] Enviando lote para API...");
+      await api.post("/heatmaps/lote", { docId, sessionId, lote: heatmaps });
+      sessionStorage.removeItem("heatmaps");
+      console.log("[HEATMAP] Lote enviado com sucesso.");
     } catch (error: any) {
-      window.alert(error.response?.data?.message || "Erro ao enviar lote");
+      console.error(
+        "[HEATMAP] Erro ao enviar lote:",
+        error.response?.data?.message || "Erro desconhecido"
+      );
     }
   }
 
   return (
-    <div ref={containerRef} className="w-full relative max-h-screen overflow-auto">
+    <div
+      ref={containerRef}
+      className="w-full relative max-h-screen overflow-auto"
+    >
       {numPages && numPages > 1 && (
         <>
           <button
@@ -169,7 +187,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           </button>
         </>
       )}
-  
+
       <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
         <Page
           canvasRef={pageRef}
@@ -185,8 +203,9 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
         />
       </Document>
 
-
-      <Button onClick={enviaLote} className="mt-4">Enviar Lote</Button>
+      <Button onClick={enviaLote} className="mt-4">
+        Enviar Lote
+      </Button>
     </div>
   );
 }
