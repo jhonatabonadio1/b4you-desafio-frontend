@@ -87,6 +87,7 @@
     /* font-feature-settings: "rlig" 1, "calt" 1; */
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
+    overflow-x:hidden;
   }
 
   @supports (font: -apple-system-body) and (-webkit-appearance: none) {

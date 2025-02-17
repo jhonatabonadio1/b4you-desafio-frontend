@@ -39,6 +39,12 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
   const pageRef = useRef<HTMLCanvasElement>(null);
   const heatmapRef = useRef<HTMLDivElement>(null);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [containerWidth, setContainerWidth] = useState(0);
+
+  const [lote, setLote] = useState([] as LoteProps[])
+
   // 1. Buscar a URL do PDF
   useEffect(() => {
     async function fetchDocument() {
@@ -51,6 +57,20 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
     }
     fetchDocument();
   }, [docId]);
+
+    // Atualiza as dimensões do container
+    useEffect(() => {
+      function updateContainerWidth() {
+        if (containerRef.current) {
+          setContainerWidth(containerRef.current.clientWidth);
+  
+        }
+      }
+  
+      updateContainerWidth();
+
+    }, []);
+  
 
   // 2. Quando o PDF carrega, pegamos as dimensões de cada página na escala 1
   async function onDocumentLoadSuccess(pdf: any) {
@@ -89,7 +109,7 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
         const allHeatmaps = data.flatMap((lote: any) => lote.Heatmaps);
 
         // Agora chamamos createHeatmap com TODOS os heatmaps.
-        createHeatmap(allHeatmaps);
+        setLote(allHeatmaps);
       } else {
     
         clearHeatmap();
@@ -117,61 +137,49 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
   }, [pageNumber]);
 
   // 7. Cria o heatmap com h337, ajustando o container e escalando as coords
-  function createHeatmap(lote: LoteProps[]) {
+ 
+  
+useEffect(() => {
+
+  function createHeatmap() {
     if (!heatmapRef.current || !pageRef.current) return;
 
-    // 1. Pegar o tamanho real do canvas do PDF (em pixels na tela)
     const pdfRect = pageRef.current.getBoundingClientRect();
 
-    // Ajustar o container do heatmap para ter esse tamanho
+    // Ajustar o tamanho do container do heatmap para cobrir a página corretamente
     heatmapRef.current.style.width = `${pdfRect.width}px`;
     heatmapRef.current.style.height = `${pdfRect.height}px`;
+    heatmapRef.current.innerHTML = ""; // Limpa o heatmap anterior
 
-    // Limpar qualquer heatmap anterior
-    heatmapRef.current.innerHTML = "";
-
-    // 2. Criar instância do heatmap
+    // Criar nova instância do heatmap
     const heatmap = h337.create({
       container: heatmapRef.current,
-      radius: 40,
+      radius: containerWidth < 680 ? 20 : containerWidth > 900 && containerWidth < 1300 ? 40 : 50, // Agora atualiza dinamicamente
       maxOpacity: 0.7,
       minOpacity: 0.1,
-      blur: 0.75,
+      blur: 1,
+      
     });
 
-    // 3. Escalar as coordenadas do PDF para o tamanho do container
-    //    Supondo que cada "point" tenha "pageWidth" e "pageHeight"
+    // Converter coordenadas do PDF para o tamanho da página na tela
     const scaledData = lote.map((point) => {
-      // Se "x" e "y" são do espaço PDF (0..pageWidth, 0..pageHeight),
-      // converta para o espaço do container (0..pdfRect.width, 0..pdfRect.height)
       const scaledX = Math.round((point.x / point.pageWidth) * pdfRect.width);
       const scaledY = Math.round((point.y / point.pageHeight) * pdfRect.height);
-
-      return {
-        x: scaledX,
-
-        y: scaledY,
-        value: 1,
-      };
+      return { x: scaledX, y: scaledY, value: 1 };
     });
 
-    // 4. Passar dados para o heatmap
-    heatmap.setData({
-      max: 5,
-      min: 0,
-      data: scaledData,
-    });
+    // Definir os dados no heatmap
+    heatmap.setData({ max: 5, min: 0, data: scaledData });
   }
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Criar o heatmap na inicialização se já tivermos os dados
+  if (lote.length > 0) {
+    createHeatmap();
+  }
 
-  const [containerWidth, setContainerWidth] = useState(0);
+ 
+}, [ pageNumber, lote]);
 
-  useEffect(() => {
-    if (containerRef.current) {
-      setContainerWidth(containerRef.current.clientWidth);
-    }
-  }, [pageNumber, isPageRendered]);
 
   // 8. Render
   return (
@@ -195,7 +203,7 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
       {/* Overlay do Heatmap, absoluto sobre a página */}
       <div
         ref={heatmapRef}
-        className="pointer-events-none !absolute top-0 left-0 "
+        className="pointer-events-none !absolute top-0 left-0 bg-black/5"
       />
     </div>
   );
