@@ -7,7 +7,7 @@ export function setupAPIClient(ctx = undefined) {
   const {'incorporae.token': token} = cookies
 
   const api = axios.create({
-    baseURL:   `http://127.0.0.1:3333/api`,
+    baseURL:   `http://192.168.1.139:3333/api`,
     headers: {
       Authorization: `${token ? 'Bearer ' + token : ''}`,
     },

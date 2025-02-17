@@ -86,7 +86,7 @@ export function NavUser() {
                 <Settings />
                 Configurações
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => route.push("/billing")}>
+              <DropdownMenuItem onClick={() => route.push("https://billing.stripe.com/p/login/test_14keVW09C8tz8zC4gg")}>
                 <CreditCard />
                 Pagamentos
               </DropdownMenuItem>

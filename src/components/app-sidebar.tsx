@@ -35,7 +35,7 @@ const data = {
       icon: FileText,
     },
     {
-      name: "Mapa de calor",
+      name: "Heatmaps",
       url: "/heatmaps",
       icon: Flame,
     },
