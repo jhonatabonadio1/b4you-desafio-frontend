@@ -54,7 +54,7 @@ export default function Heatmaps() {
                 </div>
               </div>
 
-              <div className="flex  flex-1 items-center justify-end gap-2">
+              <div className="flex flex-1 items-center justify-end gap-2 ">
                 <div className="w-auto">
                   <ModeSwitcher />
                 </div>
@@ -75,8 +75,8 @@ export default function Heatmaps() {
 
             <div className="relative flex flex-col h-full w-full">
               <Card>
-                <CardHeader>
-                  <div className="rounded-lg  max-h-full overflow-hidden">
+                <CardHeader className="flex flex-row items-center p-0 justify-center">
+                  <div className="rounded-lg max-w-2xl flex-1">
                     <DocumentHeatmapView
                       docId={docId as string}
                       onLoad={(doc) => setNumPages(doc.numPages)}

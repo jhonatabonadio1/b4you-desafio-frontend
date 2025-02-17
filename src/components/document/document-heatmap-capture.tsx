@@ -35,6 +35,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   const [pages, setPages] = useState<PagesProps[]>([]);
   const [loteHeatmaps, setLoteHeatmaps] = useState<LoteProps[]>([]);
   const [containerWidth, setContainerWidth] = useState(0);
+
   const [scale, setScale] = useState(1); // Escala do PDF renderizado
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -45,6 +46,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
     function updateContainerWidth() {
       if (containerRef.current) {
         setContainerWidth(containerRef.current.clientWidth);
+
       }
     }
 
@@ -63,7 +65,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
     for (let i = 1; i <= pdf.numPages; i++) {
       const pageObj = await pdf.getPage(i);
       const viewport = pageObj.getViewport({ scale: 1 }); // Tamanho real do PDF
-      
+
       pageWithDimensions.push({
         width: viewport.width,
         height: viewport.height,
@@ -150,7 +152,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   }
 
   return (
-    <div ref={containerRef} className="w-full relative">
+    <div ref={containerRef} className="w-full relative max-h-screen overflow-auto">
       {numPages && numPages > 1 && (
         <>
           <button
@@ -167,6 +169,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           </button>
         </>
       )}
+  
       <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
         <Page
           canvasRef={pageRef}
@@ -181,6 +184,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           }`}
         />
       </Document>
+
 
       <Button onClick={enviaLote} className="mt-4">Enviar Lote</Button>
     </div>

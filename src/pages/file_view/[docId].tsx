@@ -60,7 +60,7 @@ export default function View() {
             <>
        
 
-              <div ref={pdfWrapperRef} className="relative w-full">
+              <div ref={pdfWrapperRef} className="relative items-center w-full">
 
                 <DocumentHeatmapCapture pdfUrl={pdfUrl} docId={docId as string}  />
               
