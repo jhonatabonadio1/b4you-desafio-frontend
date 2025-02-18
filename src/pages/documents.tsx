@@ -310,7 +310,10 @@ export default function Documents() {
                                 </DialogContent>
                               </Dialog>
 
-                              <Button onClick={() => handleShareLink(file)} variant="outline">
+                              <Button
+                                onClick={() => handleShareLink(file)}
+                                variant="outline"
+                              >
                                 <Share />
                               </Button>
 
@@ -334,8 +337,13 @@ export default function Documents() {
                                     <Button
                                       onClick={() => handleDeleteFile(file)}
                                       variant="destructive"
+                                      disabled={isDeleting}
                                     >
-                                      Sim, tenho certeza
+                                      {isDeleting ? (
+                                        <Icons.spinner className="animate-spin" />
+                                      ) : (
+                                        "Sim, tenho certeza"
+                                      )}
                                     </Button>
                                     <DialogClose asChild>
                                       <Button variant="outline">Fechar</Button>
@@ -405,7 +413,10 @@ export default function Documents() {
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-                        <Button onClick={() => handleShareLink(file)} variant="outline">
+                        <Button
+                          onClick={() => handleShareLink(file)}
+                          variant="outline"
+                        >
                           <Globe />
                         </Button>
                         <Dialog>
