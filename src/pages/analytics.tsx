@@ -57,11 +57,35 @@ const FormSchema = z.object({
   }),
 });
 
-export default function Pagamentos() {
+const frameworks = [
+  {
+    value: "next.js",
+    label: "Next.js",
+  },
+  {
+    value: "sveltekit",
+    label: "SvelteKit",
+  },
+  {
+    value: "nuxt.js",
+    label: "Nuxt.js",
+  },
+  {
+    value: "remix",
+    label: "Remix",
+  },
+  {
+    value: "astro",
+    label: "Astro",
+  },
+]
+
+export default function Analytics() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const docId = "67b0a8a411975e4edebe68ae";
+  const docId = "67b37b42737e02cad3feb6d8";
+  
   useEffect(() => {
     setIsLoading(true);
     async function fetchPdf() {
@@ -155,7 +179,7 @@ export default function Pagamentos() {
                             Documento
                           </FormLabel>
                           <FormControl className="w-full">
-                            <DocumentsCombobox />
+                            <DocumentsCombobox data={frameworks} onChange={() => {}}/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>

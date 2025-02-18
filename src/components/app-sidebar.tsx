@@ -1,8 +1,10 @@
 import * as React from "react";
 import {
+  ChartColumn,
   FileText,
   Flame,
   GalleryVerticalEnd,
+  Globe,
 } from "lucide-react";
 
 import { NavMenu } from "@/components/nav-menu";
@@ -35,9 +37,19 @@ const data = {
       icon: FileText,
     },
     {
-      name: "Heatmaps",
+      name: "Mapas de calor",
       url: "/heatmaps",
       icon: Flame,
+    },
+    {
+      name: "Análises",
+      url: "/analytics",
+      icon: ChartColumn,
+    },
+    {
+      name: "Sites",
+      url: "/sites",
+      icon: Globe,
     },
   ],
 };

@@ -1,19 +1,26 @@
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { api } from "@/services/apiClient";
 
-export function useFiles(search: string) {
+export function useFiles(search?: string) {
   return useQuery(["files", search], async () => {
     // Envia o termo de busca como query param
-    const response = await api.get("/files", { params: { search } });
+    let response;
+
+    if (search) {
+      response = await api.get("/files", { params: { search } });
+    } else {
+      response = await api.get("/files");
+    }
+
     // A resposta: { success: true, data: [...] }
-    // Precisamos retornar o array real de dados:
+    // return response.data.data;Precisamos retornar o array real de dados:
     return response.data.data;
   });
 }
 
 export function useUploadFile() {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     async (file: File) => {
       const formData = new FormData();
@@ -25,11 +32,11 @@ export function useUploadFile() {
       // Retorna { title, sizeInBytes, ... }
       return response.data;
     },
-   {
-    onSuccess: () => {
-      queryClient.invalidateQueries("storage");
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("storage");
+      },
     }
-   }
   );
 }
 

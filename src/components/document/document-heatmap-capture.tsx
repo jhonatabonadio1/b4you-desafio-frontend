@@ -27,19 +27,21 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [scale, setScale] = useState(1);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [ws, setWs] = useState<WebSocket | null>(null);
+
+  const [alreadyCreatedWebsocket, setAlreadyCreatedWebsocket] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    console.log("[INIT] Resetando localStorage e heatmaps...");
     sessionStorage.removeItem("heatmaps");
     createSession();
   }, []);
 
   async function createSession() {
     try {
-      console.log("[SESSION] Criando sessão...");
       const response = await api.post("/sessions", { docId });
       setSessionId(response.data.sessionId);
     } catch (error) {
@@ -62,6 +64,12 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   async function onDocumentLoadSuccess(pdf: any) {
     setNumPages(pdf.numPages);
     setPageNumber(1);
+
+    if (pdf.numPages === 1) {
+      if (!alreadyCreatedWebsocket) {
+        openWebSocket();
+      }
+    }
 
     const pageWithDimensions: PagesProps[] = [];
 
@@ -140,7 +148,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
     let interval: NodeJS.Timeout;
 
     if (isPageRendered) {
-      console.log("Intervalo iniciado")
+      console.log("Intervalo iniciado");
       interval = setInterval(enviaLote, 60000);
     }
     return () => clearInterval(interval);
@@ -149,15 +157,12 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   async function enviaLote() {
     const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
     if (heatmaps.length === 0 || !sessionId) {
-      console.log("[HEATMAP] Nenhum dado para enviar ou sessionId ausente.");
       return;
     }
 
     try {
-      console.log("[HEATMAP] Enviando lote para API...");
       await api.post("/heatmaps/lote", { docId, sessionId, lote: heatmaps });
       sessionStorage.removeItem("heatmaps");
-      console.log("[HEATMAP] Lote enviado com sucesso.");
     } catch (error: any) {
       console.error(
         "[HEATMAP] Erro ao enviar lote:",
@@ -165,6 +170,84 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
       );
     }
   }
+
+  //** TRAQUEAMENTO + TEMPO DE INTERAÇÃO */
+  useEffect(() => {
+    if (isPageRendered) {
+      setStartTime(Date.now());
+    }
+  }, [pageNumber, isPageRendered]);
+
+  async function handleSendPageView() {
+    if (!startTime || !sessionId) return;
+
+    const timeSpent = Date.now() - startTime;
+
+    try {
+      const data = { pageNumber, interactionTime: timeSpent / 1000 };
+
+      await api.post("/tracking/" + sessionId + "/pageview", data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    if (pageNumber > 1) {
+      handleSendPageView();
+    }
+  }, [pageNumber]);
+
+  function openWebSocket() {
+    if (!sessionId) return;
+
+    const socket = new WebSocket("ws://localhost:8080");
+
+    socket.onopen = () => {
+      setAlreadyCreatedWebsocket(true);
+      console.log("✅ WebSocket conectado!");
+      setStartTime(Date.now());
+
+      // Enviar ID da sessão e docId para o backend
+      socket.send(
+        JSON.stringify({
+          sessionId,
+          docId,
+          fingerprint: navigator.userAgent,
+          pageNumber: 1,
+        })
+      );
+    };
+
+    setWs(socket);
+  }
+
+  useEffect(() => {
+    if (!numPages) return;
+    if (numPages > 1) {
+      if (pageNumber === numPages) {
+        if (!alreadyCreatedWebsocket) {
+          openWebSocket();
+        }
+      } else if (pageNumber === numPages - 1 && ws) {
+        closeWebSocket(); 
+      }
+    }
+  }, [pageNumber, numPages]);
+
+  function closeWebSocket() {
+    if (ws) {
+      console.log("❌ WebSocket fechado!");
+      ws.close();
+      setWs(null);
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (ws) ws.close();
+    };
+  }, [ws]);
 
   return (
     <div

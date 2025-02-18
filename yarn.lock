@@ -1073,10 +1073,24 @@
   dependencies:
     undici-types "~6.19.2"
 
+"@types/react-beforeunload@^2.1.5":
+  version "2.1.5"
+  resolved "https://registry.yarnpkg.com/@types/react-beforeunload/-/react-beforeunload-2.1.5.tgz#ebf24230392e24c5d70fe91bc0207a5eeb3216b8"
+  integrity sha512-xrczkBsJ26lidA/Y/Oln0lYgux79KUkpomaOdnQFPRV9Sx1Mgx53RkYsgZ234HG1ZMKGCmzpk7jO5T4h3bmjvg==
+  dependencies:
+    "@types/react" "*"
+
 "@types/react-dom@^19":
   version "19.0.3"
   resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-19.0.3.tgz#0804dfd279a165d5a0ad8b53a5b9e65f338050a4"
   integrity sha512-0Knk+HJiMP/qOZgMyNFamlIjw9OFCsyC2ZbigmEEyXXixgre6IQpm/4V+r3qH4GC1JPvRJKInw+on2rV6YZLeA==
+
+"@types/react@*":
+  version "19.0.10"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-19.0.10.tgz#d0c66dafd862474190fe95ce11a68de69ed2b0eb"
+  integrity sha512-JuRQ9KXLEjaUNjTWpzuR231Z2WpIwczOkBEIvbHNCzQefFIT0L8IqE6NV6ULLyC1SI/i234JnDoMkfg+RjQj2g==
+  dependencies:
+    csstype "^3.0.2"
 
 "@types/react@^19":
   version "19.0.8"
@@ -3467,6 +3481,11 @@ queue-microtask@^1.2.2:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
+
+react-beforeunload@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/react-beforeunload/-/react-beforeunload-2.6.0.tgz#e7ead8dc39009a205b4249619050772595bfeefd"
+  integrity sha512-aKrGaRNc7fZQlDnmSYrXu4cbz9QEPhScA4A2mLxhjcULDy4VILLyLhSEjg2goIw3o5LQ1zss44kmQh5LXWYGCw==
 
 react-day-picker@8.10.1:
   version "8.10.1"

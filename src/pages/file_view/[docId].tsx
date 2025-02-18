@@ -1,5 +1,3 @@
- 
- 
 import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
@@ -9,19 +7,16 @@ import { api } from "@/services/apiClient";
 import Head from "next/head";
 import { DocumentHeatmapCapture } from "@/components/document/document-heatmap-capture";
 
-
 export default function View() {
   const router = useRouter();
 
-
   const { docId } = router.query;
 
-  const [pdfUrl, setPdfUrl] = useState("false")
+  const [pdfUrl, setPdfUrl] = useState("false");
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const modalRef = useRef<HTMLDivElement>(null);
   const pdfWrapperRef = useRef<HTMLDivElement>(null);
-  
 
   useEffect(() => {
     async function fetchPdf() {
@@ -40,7 +35,6 @@ export default function View() {
 
   /** POSSO DEFINIR UM USERAGENT LOCAL (SALVAR NO LOCALSTORAGE O ID DO NAVEGADOR, SE NÃO EXISTIR, CADASTRA UM.) */
 
-
   return (
     <>
       <Head>
@@ -58,12 +52,11 @@ export default function View() {
             </div>
           ) : (
             <>
-       
-
               <div ref={pdfWrapperRef} className="relative items-center w-full">
-
-                <DocumentHeatmapCapture pdfUrl={pdfUrl} docId={docId as string}  />
-              
+                <DocumentHeatmapCapture
+                  pdfUrl={pdfUrl}
+                  docId={docId as string}
+                />
               </div>
             </>
           )}
@@ -75,8 +68,6 @@ export default function View() {
             By: <b>Incorporae!</b>
           </Link>
         </div>
-
-    
       </div>
     </>
   );

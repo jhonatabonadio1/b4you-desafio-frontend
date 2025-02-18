@@ -10,8 +10,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 
 // Tipos
 interface Props {
+  pdfUrl: string;
   docId: string;
   onLoad: (doc: any) => void;
+  page: number;
 }
 
 interface PagesProps {
@@ -29,11 +31,10 @@ interface LoteProps {
   pageHeight: number; // <-- Precisamos para escalar
 }
 
-export function DocumentHeatmapView({ docId, onLoad }: Props) {
-  const [pageNumber, setPageNumber] = useState(1);
+export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
+
   const [isPageRendered, setIsPageRendered] = useState(false);
   const [pages, setPages] = useState<PagesProps[]>([]);
-  const [pdfUrl, setPdfUrl] = useState("");
 
   // Referências
   const pageRef = useRef<HTMLCanvasElement>(null);
@@ -43,39 +44,24 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
 
   const [containerWidth, setContainerWidth] = useState(0);
 
-  const [lote, setLote] = useState([] as LoteProps[])
+  const [lote, setLote] = useState([] as LoteProps[]);
 
   // 1. Buscar a URL do PDF
+
+  // Atualiza as dimensões do container
   useEffect(() => {
-    async function fetchDocument() {
-      try {
-        const { data } = await api.get(`/file/${docId}`);
-        setPdfUrl(data.url);
-      } catch (error) {
-        console.error("Erro ao buscar documento:", error);
+    function updateContainerWidth() {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.clientWidth);
       }
     }
-    fetchDocument();
-  }, [docId]);
 
-    // Atualiza as dimensões do container
-    useEffect(() => {
-      function updateContainerWidth() {
-        if (containerRef.current) {
-          setContainerWidth(containerRef.current.clientWidth);
-  
-        }
-      }
-  
-      updateContainerWidth();
-
-    }, []);
-  
+    updateContainerWidth();
+  }, []);
 
   // 2. Quando o PDF carrega, pegamos as dimensões de cada página na escala 1
   async function onDocumentLoadSuccess(pdf: any) {
-    onLoad(pdf);
-    setPageNumber(1);
+    onLoad(pdf)
 
     const pageDimensions: PagesProps[] = [];
     for (let i = 1; i <= pdf.numPages; i++) {
@@ -90,33 +76,30 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
     setPages(pageDimensions);
 
     // Carregar heatmaps da página 1
-    buscaLoteHeatmaps(1);
+    buscaLoteHeatmaps(page);
   }
 
   // 4. Sempre que a página mudar, recarregamos os heatmaps daquela página
   useEffect(() => {
-    if (pageNumber && pages.length > 0) {
-      buscaLoteHeatmaps(pageNumber);
+    if (page && pages.length > 0) {
+      clearHeatmap();
+      buscaLoteHeatmaps(page);
     }
-  }, [docId, pageNumber, pages]);
+  }, [pdfUrl, page, pages]);
 
   async function buscaLoteHeatmaps(page: number) {
-
     try {
       const { data } = await api.get(`/heatmaps/${docId}/${page}`);
-     
+
       if (data) {
         const allHeatmaps = data.flatMap((lote: any) => lote.Heatmaps);
 
         // Agora chamamos createHeatmap com TODOS os heatmaps.
         setLote(allHeatmaps);
       } else {
-    
-        clearHeatmap();
       }
     } catch (error) {
       console.error("Erro ao buscar heatmaps:", error);
-      clearHeatmap();
     }
   }
 
@@ -128,58 +111,58 @@ export function DocumentHeatmapView({ docId, onLoad }: Props) {
 
   // 6. Renderização da página
   function onPageRenderSuccess() {
-  
     setIsPageRendered(true);
   }
 
   useEffect(() => {
     setIsPageRendered(false);
-  }, [pageNumber]);
+  }, [page]);
 
   // 7. Cria o heatmap com h337, ajustando o container e escalando as coords
- 
-  
-useEffect(() => {
 
-  function createHeatmap() {
-    if (!heatmapRef.current || !pageRef.current) return;
+  useEffect(() => {
+    function createHeatmap() {
+      if (!heatmapRef.current || !pageRef.current) return;
 
-    const pdfRect = pageRef.current.getBoundingClientRect();
+      const pdfRect = pageRef.current.getBoundingClientRect();
 
-    // Ajustar o tamanho do container do heatmap para cobrir a página corretamente
-    heatmapRef.current.style.width = `${pdfRect.width}px`;
-    heatmapRef.current.style.height = `${pdfRect.height}px`;
-    heatmapRef.current.innerHTML = ""; // Limpa o heatmap anterior
+      // Ajustar o tamanho do container do heatmap para cobrir a página corretamente
+      heatmapRef.current.style.width = `${pdfRect.width}px`;
+      heatmapRef.current.style.height = `${pdfRect.height}px`;
+      heatmapRef.current.innerHTML = ""; // Limpa o heatmap anterior
 
-    // Criar nova instância do heatmap
-    const heatmap = h337.create({
-      container: heatmapRef.current,
-      radius: containerWidth < 680 ? 20 : containerWidth > 900 && containerWidth < 1300 ? 40 : 50, // Agora atualiza dinamicamente
-      maxOpacity: 0.7,
-      minOpacity: 0.1,
-      blur: 1,
-      
-    });
+      // Criar nova instância do heatmap
+      const heatmap = h337.create({
+        container: heatmapRef.current,
+        radius:
+          containerWidth < 680
+            ? 20
+            : containerWidth > 900 && containerWidth < 1300
+            ? 40
+            : 50, // Agora atualiza dinamicamente
+        maxOpacity: 0.7,
+        minOpacity: 0.1,
+        blur: 1,
+      });
 
-    // Converter coordenadas do PDF para o tamanho da página na tela
-    const scaledData = lote.map((point) => {
-      const scaledX = Math.round((point.x / point.pageWidth) * pdfRect.width);
-      const scaledY = Math.round((point.y / point.pageHeight) * pdfRect.height);
-      return { x: scaledX, y: scaledY, value: 1 };
-    });
+      // Converter coordenadas do PDF para o tamanho da página na tela
+      const scaledData = lote.map((point) => {
+        const scaledX = Math.round((point.x / point.pageWidth) * pdfRect.width);
+        const scaledY = Math.round(
+          (point.y / point.pageHeight) * pdfRect.height
+        );
+        return { x: scaledX, y: scaledY, value: 1 };
+      });
 
-    // Definir os dados no heatmap
-    heatmap.setData({ max: 5, min: 0, data: scaledData });
-  }
+      // Definir os dados no heatmap
+      heatmap.setData({ max: 5, min: 0, data: scaledData });
+    }
 
-  // Criar o heatmap na inicialização se já tivermos os dados
-  if (lote.length > 0) {
-    createHeatmap();
-  }
-
- 
-}, [ pageNumber, lote]);
-
+    // Criar o heatmap na inicialização se já tivermos os dados
+    if (lote.length > 0) {
+      createHeatmap();
+    }
+  }, [page, lote]);
 
   // 8. Render
   return (
@@ -188,8 +171,8 @@ useEffect(() => {
         {/* Renderiza a página do PDF */}
         <Page
           canvasRef={pageRef}
-          key={pageNumber}
-          pageNumber={pageNumber}
+          key={page}
+          pageNumber={page}
           renderTextLayer={false}
           renderAnnotationLayer={false}
           width={containerWidth}
