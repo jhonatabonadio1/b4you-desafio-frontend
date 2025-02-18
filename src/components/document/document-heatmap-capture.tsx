@@ -159,56 +159,73 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     if (numPages && pageNumber < numPages) setPageNumber((prev) => prev + 1);
   }
 
-  // Capturar os movimentos do mouse corretamente
   useEffect(() => {
-    // Define o elemento alvo para adicionar o listener.
-    // Podemos continuar usando o fullscreen ou container para capturar o evento,
-    // mas para calcular as coordenadas usaremos sempre o bounding rect do canvas.
     const targetElement = isFullscreen ? document.fullscreenElement : containerRef.current;
     if (!targetElement || pages.length === 0 || !pageRef.current) return;
   
-    const handleMouseMove = throttle((e: Event) => {
-      const mouseEvent = e as MouseEvent;
-      // Usamos sempre o bounding rect do canvas para obter as coordenadas.
+
+
+    const throttledMouseMove = throttle((e: MouseEvent) => {
       const rect = pageRef.current!.getBoundingClientRect();
-      const x = mouseEvent.clientX - rect.left;
-      const y = mouseEvent.clientY - rect.top;
-      
-      const currentPage = pages.find((p) => p.page === pageNumber);
-      if (!currentPage) return;
-  
-      // Calcula a escala efetiva usando a largura do canvas.
-      // Em fullscreen, usamos as dimensões reais do canvas (pageRef),
-      // fora do fullscreen, usamos a largura do container.
-      const effectiveScale = isFullscreen
-        ? pageRef.current!.clientWidth / pages[0].width
-        : containerRef.current
-        ? containerRef.current.clientWidth / pages[0].width
-        : scale;
-  
-      const originalX = x /  (effectiveScale * zoom);
-      const originalY = y / (effectiveScale * zoom);
-  
-      const newHeatmapData = {
-        x: originalX,
-        y: originalY,
-        value: 1,
-        pageWidth: currentPage.width,
-        pageHeight: currentPage.height,
-        page: pageNumber,
-      };
-  
-      const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
-      heatmaps.push(newHeatmapData);
-      sessionStorage.setItem("heatmaps", JSON.stringify(heatmaps));
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      processMovement(x, y);
     }, 300);
   
-    targetElement.addEventListener("mousemove", handleMouseMove);
+    // Função wrapper que recebe um Event, converte para MouseEvent e chama a função throttled
+    const mouseMoveListener = (e: Event) => {
+      throttledMouseMove(e as MouseEvent);
+    };
+  
+    const handleTouchMove = throttle((e: TouchEvent) => {
+      // Usamos o primeiro toque para capturar as coordenadas
+      const touch = e.touches[0];
+      const rect = pageRef.current!.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      const y = touch.clientY - rect.top;
+      processMovement(x, y);
+    }, 300);
+    
+    const touchMoveListener = (e: Event) => {
+      handleTouchMove(e as TouchEvent);
+    }
+  
+    targetElement.addEventListener("mousemove", mouseMoveListener);
+    targetElement.addEventListener("touchmove", touchMoveListener, { passive: true });
+  
     return () => {
-      targetElement.removeEventListener("mousemove", handleMouseMove);
+      targetElement.removeEventListener("mousemove", mouseMoveListener);
+      targetElement.removeEventListener("touchmove", touchMoveListener);
     };
   }, [isFullscreen, zoom, pageNumber, pages, scale, containerRef, pageRef]);
   
+  function processMovement(x: number, y: number) {
+    const currentPage = pages.find((p) => p.page === pageNumber);
+    if (!currentPage) return;
+  
+    const effectiveScale = isFullscreen
+      ? pageRef.current!.clientWidth / pages[0].width
+      : containerRef.current
+      ? containerRef.current.clientWidth / pages[0].width
+      : scale;
+  
+    const originalX = x / (effectiveScale * zoom);
+    const originalY = y / (effectiveScale * zoom);
+  
+    const newHeatmapData = {
+      x: originalX,
+      y: originalY,
+      value: 1,
+      pageWidth: currentPage.width,
+      pageHeight: currentPage.height,
+      page: pageNumber,
+    };
+  
+    const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
+    heatmaps.push(newHeatmapData);
+    sessionStorage.setItem("heatmaps", JSON.stringify(heatmaps));
+  }
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
