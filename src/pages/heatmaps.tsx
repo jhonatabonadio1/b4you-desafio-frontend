@@ -29,19 +29,17 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 
 export default function Heatmaps() {
-
-
   const [pdfUrl, setPdfUrl] = useState("");
 
   const [pageNumber, setPageNumber] = useState(1);
   const [numPages, setNumPages] = useState(1);
   const { data, isLoading } = useFiles();
 
-  const [docId, setDocId] = useState("")
+  const [docId, setDocId] = useState("");
 
   const [documentsPickerData, setDocumentsPickerData] = useState<
-  { label: string; value: string }[]
->([] as { label: string; value: string }[]);
+    { label: string; value: string }[]
+  >([] as { label: string; value: string }[]);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -112,7 +110,7 @@ export default function Heatmaps() {
             <header className="flex flex-col lg:flex-row lg:items-center gap-4 w-full justify-between border-b py-4">
               <div>
                 <h2 className="scroll-m-20 text-3xl font-bold tracking-tight transition-colors first:mt-0">
-                Mapas de calor
+                  Mapas de calor
                 </h2>
                 <p className="text-muted-foreground">
                   Confira o mapa de calor de seus documentos.
@@ -131,10 +129,10 @@ export default function Heatmaps() {
                         onChange={(docId) => setDocId(docId)}
                       />
                     )}
-
-            
                   </div>
-                  <Button onClick={onSubmit} className="lg:w-auto w-full">Ver mapa</Button>
+                  <Button onClick={onSubmit} className="lg:w-auto w-full">
+                    Ver mapa
+                  </Button>
                 </div>
                 {numPages && numPages > 1 && (
                   <div className="flex flex-row gap-2 items-center w-full justify-end">
@@ -159,21 +157,19 @@ export default function Heatmaps() {
                 )}
               </div>
               {pdfUrl && (
-              <Card className="flex-1 items-center justify-center overflow-auto">
-                <CardHeader className="relative flex flex-row h-full items-center p-0 justify-center">
-                  <div className="relative rounded-lg  flex-1">
-                    
+                <Card className="flex-1 relative items-center justify-center overflow-auto">
+                  <CardHeader className="relative flex flex-row h-full items-center p-0 justify-center">
+                    <div className="relative rounded-lg  flex-1">
                       <DocumentHeatmapView
                         pdfUrl={pdfUrl}
                         docId={docId as string}
                         page={pageNumber}
                         onLoad={(doc) => onLoadDocument(doc)}
                       />
-        
-                  </div>
-                </CardHeader>
-              </Card>
-                          )}
+                    </div>
+                  </CardHeader>
+                </Card>
+              )}
             </div>
           </div>
         </SidebarInset>

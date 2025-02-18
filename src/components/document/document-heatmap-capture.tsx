@@ -425,7 +425,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
       >
         <Page
           canvasRef={pageRef}
-        
+          loading=""
           key={pageNumber}
           pageNumber={pageNumber}
           renderTextLayer={false}

@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import h337 from "heatmap.js";
 import { api } from "@/services/apiClient";
+import { MoonLoader } from "react-spinners";
 
 // Configuração do worker do PDF
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -32,7 +33,6 @@ interface LoteProps {
 }
 
 export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
-
   const [isPageRendered, setIsPageRendered] = useState(false);
   const [pages, setPages] = useState<PagesProps[]>([]);
 
@@ -61,7 +61,7 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
 
   // 2. Quando o PDF carrega, pegamos as dimensões de cada página na escala 1
   async function onDocumentLoadSuccess(pdf: any) {
-    onLoad(pdf)
+    onLoad(pdf);
 
     const pageDimensions: PagesProps[] = [];
     for (let i = 1; i <= pdf.numPages; i++) {
@@ -74,7 +74,6 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
       });
     }
     setPages(pageDimensions);
-
     // Carregar heatmaps da página 1
     buscaLoteHeatmaps(page);
   }
@@ -116,7 +115,7 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
 
   useEffect(() => {
     setIsPageRendered(false);
-  }, [page]);
+  }, [page, pdfUrl]);
 
   // 7. Cria o heatmap com h337, ajustando o container e escalando as coords
 
@@ -166,10 +165,19 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
 
   // 8. Render
   return (
-    <div ref={containerRef} className="relative max-w-full">
-      <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
+    <div ref={containerRef} className="relative max-w-full ">
+      <Document
+        file={pdfUrl}
+        onLoadSuccess={onDocumentLoadSuccess}
+        loading={
+          <div className="absolute w-full h-full bg-black/20 inset-0 flex items-center justify-center z-60">
+            <MoonLoader size={34} />
+          </div>
+        }
+      >
         {/* Renderiza a página do PDF */}
         <Page
+          loading=""
           canvasRef={pageRef}
           key={page}
           pageNumber={page}
@@ -177,17 +185,18 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
           renderAnnotationLayer={false}
           width={containerWidth}
           onRenderSuccess={onPageRenderSuccess}
-          className={`transition-opacity duration-500 ease-in-out ${
+          className={`transition-opacity duration-500 ease-in-out z-70 ${
             isPageRendered ? "opacity-100" : "opacity-0"
           }`}
         />
       </Document>
 
-      {/* Overlay do Heatmap, absoluto sobre a página */}
-      <div
-        ref={heatmapRef}
-        className="pointer-events-none !absolute top-0 left-0 bg-black/5"
-      />
+      {isPageRendered && (
+        <div
+          ref={heatmapRef}
+          className="pointer-events-none !absolute top-0 left-0 bg-black/5"
+        />
+      )}
     </div>
   );
 }
