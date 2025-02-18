@@ -15,7 +15,7 @@ export default function Doc() {
 
   const [pdfUrl, setPdfUrl] = useState("false");
   const [isLoading, setIsLoading] = useState(true);
- const [docTitle, setDocTitle] = useState("")
+  const [docTitle, setDocTitle] = useState("");
 
   const modalRef = useRef<HTMLDivElement>(null);
   const pdfWrapperRef = useRef<HTMLDivElement>(null);
@@ -26,7 +26,7 @@ export default function Doc() {
       try {
         const { data } = await api.get(`/file/${docId}`);
         setPdfUrl(data.url);
-        setDocTitle(data.title)
+        setDocTitle(data.title);
       } catch (error) {
         console.error("Erro ao buscar documento:", error);
       } finally {
@@ -48,14 +48,6 @@ export default function Doc() {
         ref={modalRef}
         className="rounded overflow-x-hidden shadow-lg max-h-screen w-full flex flex-col items-center overflow-y-auto"
       >
-        <div className="fixed top-4 right-4 text-primary-foreground bg-primary px-3 py-1 rounded-full z-50">
-          <Link href="/" className="flex items-center gap-2">
-            <Icons.logo className="h-8 w-8" />
-            <span className="hidden font-bold lg:inline-block text-lg">
-              Incorporaê!
-            </span>
-          </Link>
-        </div>
         <div className="w-screen h-screen flex items-center justify-center">
           {isLoading || !pdfUrl ? (
             <div className="absolute inset-0 flex items-center justify-center z-60">
@@ -67,15 +59,23 @@ export default function Doc() {
                 ref={pdfWrapperRef}
                 className="border border-b-0 border-top-0 border-grid relative flex flex-col justify-center  items-center w-full max-w-3xl bg-primary-foreground max-h-full overflow-y-auto h-full"
               >
+                <div className="fixed top-4 right-4 text-primary-foreground bg-primary px-3 py-2 rounded-full z-50">
+                  <Link href="/" className="flex items-center gap-2">
+                    <Icons.logo className="h-6 w-6" />
+                    <span className="hidden font-bold lg:inline-block text-md">
+                      Incorporaê!
+                    </span>
+                  </Link>
+                </div>
                 <DocumentHeatmapCapture
                   pdfUrl={pdfUrl}
                   docId={docId as string}
+                  fullscreenRef={pdfWrapperRef}
                 />
               </div>
             </>
           )}
         </div>
-
       </div>
     </>
   );

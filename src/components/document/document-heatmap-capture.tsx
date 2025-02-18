@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { throttle } from "lodash";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {  RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { api } from "@/services/apiClient";
 import {
@@ -24,6 +24,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
 interface Props {
   pdfUrl: string;
   docId: string;
+  fullscreenRef: RefObject<HTMLDivElement | null>;
 }
 
 interface PagesProps {
@@ -32,7 +33,7 @@ interface PagesProps {
   page: number;
 }
 
-export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
+export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [isPageRendered, setIsPageRendered] = useState(false);
@@ -43,13 +44,40 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
   const [startTime, setStartTime] = useState<number | null>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
 
+
+  const [zoom, setZoom] = useState(1); // fator de zoom que o usuário controla
+
+  function zoomIn() {
+    const max = 2
+    setZoom((prev) => prev < max ? prev * 1.2 : prev);
+  }
+
+  function zoomOut() {
+    const max = 1
+    setZoom((prev) => prev > max ? prev / 1.2 : prev);
+  }
+
   const [alreadyCreatedWebsocket, setAlreadyCreatedWebsocket] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLCanvasElement>(null);
 
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
   useEffect(() => {
-    sessionStorage.removeItem("heatmaps");
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+
+  useEffect(() => {
+    if (!sessionStorage.getItem("heatmapsInitialized")) {
+      sessionStorage.removeItem("heatmaps");
+      sessionStorage.setItem("heatmapsInitialized", "true");
+    }
     createSession();
   }, []);
 
@@ -113,6 +141,9 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
     setIsPageRendered(false);
   }, [pageNumber]);
 
+
+ 
+
   function prevPage() {
     if (pageNumber > 1) setPageNumber((prev) => prev - 1);
   }
@@ -123,21 +154,34 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
 
   // Capturar os movimentos do mouse corretamente
   useEffect(() => {
-    if (!pageRef.current || pages.length === 0) return;
-
-    const handleMouseMove = throttle((e: MouseEvent) => {
-      if (!pageRef.current) return;
-
-      const rect = pageRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-
+    // Define o elemento alvo para adicionar o listener.
+    // Podemos continuar usando o fullscreen ou container para capturar o evento,
+    // mas para calcular as coordenadas usaremos sempre o bounding rect do canvas.
+    const targetElement = isFullscreen ? document.fullscreenElement : containerRef.current;
+    if (!targetElement || pages.length === 0 || !pageRef.current) return;
+  
+    const handleMouseMove = throttle((e: Event) => {
+      const mouseEvent = e as MouseEvent;
+      // Usamos sempre o bounding rect do canvas para obter as coordenadas.
+      const rect = pageRef.current!.getBoundingClientRect();
+      const x = mouseEvent.clientX - rect.left;
+      const y = mouseEvent.clientY - rect.top;
+      
       const currentPage = pages.find((p) => p.page === pageNumber);
       if (!currentPage) return;
-
-      const originalX = x / scale;
-      const originalY = y / scale;
-
+  
+      // Calcula a escala efetiva usando a largura do canvas.
+      // Em fullscreen, usamos as dimensões reais do canvas (pageRef),
+      // fora do fullscreen, usamos a largura do container.
+      const effectiveScale = isFullscreen
+        ? pageRef.current!.clientWidth / pages[0].width
+        : containerRef.current
+        ? containerRef.current.clientWidth / pages[0].width
+        : scale;
+  
+      const originalX = x / effectiveScale;
+      const originalY = y / effectiveScale;
+  
       const newHeatmapData = {
         x: originalX,
         y: originalY,
@@ -146,16 +190,18 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
         pageHeight: currentPage.height,
         page: pageNumber,
       };
-
+  
       const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
       heatmaps.push(newHeatmapData);
       sessionStorage.setItem("heatmaps", JSON.stringify(heatmaps));
     }, 300);
-
-    pageRef.current.addEventListener("mousemove", handleMouseMove);
-    return () =>
-      pageRef.current?.removeEventListener("mousemove", handleMouseMove);
-  }, [pageRef.current, pageNumber, pages, scale]);
+  
+    targetElement.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      targetElement.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, [isFullscreen, pageNumber, pages, scale, containerRef, pageRef]);
+  
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -274,6 +320,23 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
     );
   }, [resolvedTheme, setTheme, setMetaColor]);
 
+
+
+  function toggleFullScreen() {
+    if (!document.fullscreenElement) {
+      fullscreenRef.current
+        ?.requestFullscreen()
+        .catch((err) =>
+          console.error("Erro ao tentar entrar no modo fullscreen:", err)
+        );
+    } else {
+      document.exitFullscreen().catch((err) =>
+        console.error("Erro ao tentar sair do modo fullscreen:", err)
+      );
+    }
+  }
+  
+
   return (
     <>
     <div
@@ -284,6 +347,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
       <Document
         file={pdfUrl}
         onLoadSuccess={onDocumentLoadSuccess}
+        
         loading={
           <div className="fixed inset-0 flex items-center justify-center z-60">
             <MoonLoader size={34} />
@@ -292,13 +356,15 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
       >
         <Page
           canvasRef={pageRef}
+        
           key={pageNumber}
           pageNumber={pageNumber}
           renderTextLayer={false}
+          scale={1 * zoom}
           renderAnnotationLayer={false}
           width={containerWidth || undefined} // Escala automática para tela
           onRenderSuccess={onPageRenderSuccess}
-          className={`transition-opacity duration-500 ease-in-out ${
+          className={`transition-opacity duration-500 ease-in-out z-70 ${
             isPageRendered ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -306,11 +372,11 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
 
       
     </div>
-     {numPages && numPages > 1 && (
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2">
+     {numPages && (
+      <div className="fixed pointer-events-auto bottom-4 left-1/2 transform -translate-x-1/2 z-10">
         <div className="flex items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
           <button
-            onClick={toggleTheme}
+            onClick={zoomIn}
             className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
             style={{ animationDelay: "0.50s" }}
           >
@@ -318,7 +384,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           </button>
 
           <button
-            onClick={toggleTheme}
+            onClick={zoomOut}
             className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
             style={{ animationDelay: "0.25s" }}
           >
@@ -359,7 +425,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           </button>
 
           <button
-            onClick={toggleTheme}
+            onClick={toggleFullScreen}
             className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
             style={{ animationDelay: "0.50s" }}
           >
@@ -369,6 +435,6 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
       </div>
     )}
 
-    </>
+</>
   );
 }

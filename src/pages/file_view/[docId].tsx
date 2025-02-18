@@ -68,6 +68,7 @@ export default function View() {
                 <DocumentHeatmapCapture
                   pdfUrl={pdfUrl}
                   docId={docId as string}
+                  fullscreenRef={pdfWrapperRef}
                 />
               </div>
             </>
