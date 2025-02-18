@@ -44,6 +44,13 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
   const [startTime, setStartTime] = useState<number | null>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
 
+  useEffect(() => {
+    if (containerRef.current && pages.length > 0) {
+      const { width } = pages[0];
+      setScale(containerRef.current.clientWidth / width);
+    }
+  }, [containerWidth, pages]);
+
 
   const [zoom, setZoom] = useState(1); // fator de zoom que o usuário controla
 
@@ -74,9 +81,9 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
 
 
   useEffect(() => {
-    if (!sessionStorage.getItem("heatmapsInitialized")) {
+    if (!isFullscreen) {
+     
       sessionStorage.removeItem("heatmaps");
-      sessionStorage.setItem("heatmapsInitialized", "true");
     }
     createSession();
   }, []);
@@ -179,8 +186,8 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
         ? containerRef.current.clientWidth / pages[0].width
         : scale;
   
-      const originalX = x / effectiveScale;
-      const originalY = y / effectiveScale;
+      const originalX = x /  (effectiveScale * zoom);
+      const originalY = y / (effectiveScale * zoom);
   
       const newHeatmapData = {
         x: originalX,
@@ -200,7 +207,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     return () => {
       targetElement.removeEventListener("mousemove", handleMouseMove);
     };
-  }, [isFullscreen, pageNumber, pages, scale, containerRef, pageRef]);
+  }, [isFullscreen, zoom, pageNumber, pages, scale, containerRef, pageRef]);
   
 
   useEffect(() => {
@@ -361,6 +368,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
           pageNumber={pageNumber}
           renderTextLayer={false}
           scale={1 * zoom}
+          
           renderAnnotationLayer={false}
           width={containerWidth || undefined} // Escala automática para tela
           onRenderSuccess={onPageRenderSuccess}
