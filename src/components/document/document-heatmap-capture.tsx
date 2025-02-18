@@ -160,16 +160,35 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
   }
 
   useEffect(() => {
-    const targetElement = isFullscreen ? document.fullscreenElement : containerRef.current;
+    const targetElement =  containerRef.current;
     if (!targetElement || pages.length === 0 || !pageRef.current) return;
-  
 
 
     const throttledMouseMove = throttle((e: MouseEvent) => {
       const rect = pageRef.current!.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      processMovement(x, y);
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+    
+    if (isFullscreen) {
+      // Calcula a escala baseada nas dimensões originais do PDF
+      const scaleX = rect.width / pages[0].width;
+      const scaleY = rect.height / pages[0].height;
+      const effectiveScale = Math.min(scaleX, scaleY);
+      
+      // Calcula a área efetivamente renderizada do PDF
+      const renderedWidth = pages[0].width * effectiveScale;
+      const renderedHeight = pages[0].height * effectiveScale;
+      
+      // Determina os offsets (margens) gerados ao centralizar o PDF no canvas
+      const offsetX = (rect.width - renderedWidth) / 2;
+      const offsetY = (rect.height - renderedHeight) / 2;
+      
+      // Ajusta as coordenadas removendo o offset
+      x = x - offsetX;
+      y = y - offsetY;
+    }
+    
+    processMovement(x, y);
     }, 300);
   
     // Função wrapper que recebe um Event, converte para MouseEvent e chama a função throttled
@@ -203,14 +222,38 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     const currentPage = pages.find((p) => p.page === pageNumber);
     if (!currentPage) return;
   
-    const effectiveScale = isFullscreen
-      ? pageRef.current!.clientWidth / pages[0].width
-      : containerRef.current
-      ? containerRef.current.clientWidth / pages[0].width
-      : scale;
+    let effectiveScale: number;
   
-    const originalX = x / (effectiveScale * zoom);
-    const originalY = y / (effectiveScale * zoom);
+    if (isFullscreen && pageRef.current) {
+      // Obter as dimensões reais do canvas
+      const rect = pageRef.current.getBoundingClientRect();
+      // Calcula a escala para largura e altura
+      const scaleX = rect.width / pages[0].width;
+      const scaleY = rect.height / pages[0].height;
+      effectiveScale = Math.min(scaleX, scaleY);
+  
+      // Calcula o tamanho real renderizado do PDF
+      const renderedWidth = pages[0].width * effectiveScale;
+      const renderedHeight = pages[0].height * effectiveScale;
+  
+      // Determina os offsets (margens) se o PDF estiver centralizado (letterboxing)
+      const offsetX = (rect.width - renderedWidth) / 2;
+      const offsetY = (rect.height - renderedHeight) / 2;
+  
+      // Ajusta as coordenadas removendo os offsets
+      x = x - offsetX;
+      y = y - offsetY;
+    } else if (containerRef.current) {
+      effectiveScale = containerRef.current.clientWidth / pages[0].width;
+    } else {
+      effectiveScale = scale;
+    }
+  
+    // Se não estiver em fullscreen, a conversão precisa considerar o zoom (pois o container não reflete o zoom aplicado)
+    // Em fullscreen, effectiveScale já inclui o zoom.
+    const divisor = isFullscreen ? effectiveScale : effectiveScale * zoom;
+    const originalX = x / divisor;
+    const originalY = y / divisor;
   
     const newHeatmapData = {
       x: originalX,
@@ -225,7 +268,8 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     heatmaps.push(newHeatmapData);
     sessionStorage.setItem("heatmaps", JSON.stringify(heatmaps));
   }
-
+  
+  
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -365,6 +409,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     <>
     <div
       ref={containerRef}
+      id="container"
       className="w-full relative max-h-screen overflow-auto"
     >
      
