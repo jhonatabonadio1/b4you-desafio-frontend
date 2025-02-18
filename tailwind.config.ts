@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 import type { Config } from "tailwindcss";
 
 export default {
@@ -88,7 +89,23 @@ export default {
   			'accordion-down': 'accordion-down 0.2s ease-out',
   			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
-  	}
+  	},
+	  keyframes: {
+        expandHorizontal: {
+          '0%': { transform: 'scaleX(0)' },
+          '100%': { transform: 'scaleX(1)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateX(-5px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+      },
+      animation: {
+        // A animação do container expande de 0 a 100% em 0.5s
+        expandHorizontal: 'expandHorizontal 0.25s ease-out forwards',
+        // A animação dos ícones dura 0.3s
+        fadeIn: 'fadeIn 0.25s ease-out forwards',
+      },
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;

@@ -1,9 +1,23 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { throttle } from "lodash";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { api } from "@/services/apiClient";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Fullscreen,
+  MoonIcon,
+  SunIcon,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
+
+import { useMetaColor } from "@/hooks/use-meta-color";
+import { useTheme } from "next-themes";
+import { META_THEME_COLORS } from "@/config/site";
+import { MoonLoader } from "react-spinners";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -229,7 +243,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           openWebSocket();
         }
       } else if (pageNumber === numPages - 1 && ws) {
-        closeWebSocket(); 
+        closeWebSocket();
       }
     }
   }, [pageNumber, numPages]);
@@ -248,29 +262,34 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
     };
   }, [ws]);
 
+  const { setTheme, resolvedTheme } = useTheme();
+  const { setMetaColor } = useMetaColor();
+
+  const toggleTheme = useCallback(() => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+    setMetaColor(
+      resolvedTheme === "dark"
+        ? META_THEME_COLORS.light
+        : META_THEME_COLORS.dark
+    );
+  }, [resolvedTheme, setTheme, setMetaColor]);
+
   return (
+    <>
     <div
       ref={containerRef}
       className="w-full relative max-h-screen overflow-auto"
     >
-      {numPages && numPages > 1 && (
-        <>
-          <button
-            onClick={prevPage}
-            className="fixed left-4 top-1/2 -translate-y-1/2 z-50 bg-black/40 text-white text-2xl p-3"
-          >
-            &larr;
-          </button>
-          <button
-            onClick={nextPage}
-            className="fixed right-4 top-1/2 -translate-y-1/2 z-50 bg-black/40 text-white text-2xl p-3"
-          >
-            &rarr;
-          </button>
-        </>
-      )}
-
-      <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
+     
+      <Document
+        file={pdfUrl}
+        onLoadSuccess={onDocumentLoadSuccess}
+        loading={
+          <div className="fixed inset-0 flex items-center justify-center z-60">
+            <MoonLoader size={34} />
+          </div>
+        }
+      >
         <Page
           canvasRef={pageRef}
           key={pageNumber}
@@ -284,6 +303,72 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           }`}
         />
       </Document>
+
+      
     </div>
+     {numPages && numPages > 1 && (
+      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2">
+        <div className="flex items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
+          <button
+            onClick={toggleTheme}
+            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.50s" }}
+          >
+            <ZoomIn />
+          </button>
+
+          <button
+            onClick={toggleTheme}
+            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.25s" }}
+          >
+            <ZoomOut />
+          </button>
+
+          <button
+            onClick={prevPage}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.1s" }}
+          >
+            <ChevronLeft />
+          </button>
+
+          <span
+            className="text-foreground opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.75s" }}
+          >
+            {pageNumber} de {numPages}
+          </span>
+
+          <button
+            onClick={nextPage}
+            disabled={numPages <= 1}
+            className="bg-primary hover:bg-primary/90  text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.1s" }}
+          >
+            <ChevronRight />
+          </button>
+
+          <button
+            onClick={toggleTheme}
+            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.25s" }}
+          >
+            <SunIcon className="hidden dark:block" />
+            <MoonIcon className="block dark:hidden" />
+          </button>
+
+          <button
+            onClick={toggleTheme}
+            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+            style={{ animationDelay: "0.50s" }}
+          >
+            <Fullscreen />
+          </button>
+        </div>
+      </div>
+    )}
+
+    </>
   );
 }

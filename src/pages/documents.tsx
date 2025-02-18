@@ -29,13 +29,23 @@ import {
 } from "@/components/ui/sidebar";
 import { Textarea } from "@/components/ui/textarea";
 import { withSSRAuth } from "@/utils/withSSRAuth";
-import { Check, Clipboard, Plus, Trash, Upload } from "lucide-react";
+import {
+  Check,
+  Clipboard,
+  Globe,
+  Plus,
+  Share,
+  Trash,
+  Upload,
+} from "lucide-react";
 import Head from "next/head";
 import { useCallback, useState, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { Icons } from "@/components/icons";
 import { useDeleteFile, useFiles, useUploadFile } from "@/services/hooks/files";
 import Storage from "@/components/storage";
+import { toast } from "@/hooks/use-toast";
+// Importando o toast para exibir mensagens (necessário instalar, por exemplo, react-hot-toast)
 
 export default function Documents() {
   const [search, setSearch] = useState("");
@@ -83,8 +93,17 @@ export default function Documents() {
                 : f
             )
           );
-        } catch (error) {
-          console.log("Erro ao enviar o arquivo:", error);
+        } catch ({ response }: any) {
+          console.log("Erro ao enviar o arquivo:", response.data.error);
+          // Remove o arquivo com erro da lista de carregamento
+          setUploadingFiles((prev) => prev.filter((f) => f.name !== file.name));
+          // Exibe um toast de erro
+          toast({
+            variant: "destructive",
+            title: "Opa! Algo deu errado.",
+            description:
+              response.data.error ?? "Ocorreu um problema com sua solicitação.",
+          });
         } finally {
           if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -137,6 +156,28 @@ export default function Documents() {
     setTimeout(() => setCopied(false), 2000); // Reseta o estado após 2s
   };
 
+  // NOVA FUNÇÃO: copia o link de compartilhamento do documento
+  const handleShareLink = (file: any) => {
+    if (file.id) {
+      const shareLink = `http://localhost:3000/doc/${file.id}`;
+      navigator.clipboard
+        .writeText(shareLink)
+        .then(() => {
+          toast({
+            variant: "default",
+            title: "Link copiado com sucesso",
+          });
+        })
+        .catch(() => {
+          toast({
+            variant: "destructive",
+            title: "Opa! Algo deu errado.",
+            description: "Ocorreu um problema com sua solicitação.",
+          });
+        });
+    }
+  };
+
   return (
     <>
       <Head>
@@ -175,7 +216,7 @@ export default function Documents() {
             </div>
           </header>
           <div className="relative flex flex-1 flex-col gap-4 p-4 pt-0">
-            <header className="flex flex-col lg:flex-row items-center gap-4 w-full justify-between border-b py-4">
+            <header className="flex flex-col lg:flex-row lg:items-center gap-4 w-full justify-between border-b py-4">
               <div>
                 <h2 className="text-3xl font-bold">Documentos</h2>
                 <p className="text-muted-foreground">
@@ -230,6 +271,8 @@ export default function Documents() {
                         <CardContent>
                           {file.status === "done" && (
                             <div className="flex items-center justify-center gap-2">
+                              {/* Botão de Compartilhar Link adicionado */}
+
                               <Dialog>
                                 <DialogTrigger asChild>
                                   <Button className="w-full">Incorporar</Button>
@@ -249,23 +292,27 @@ export default function Documents() {
                                     className="text-muted-foreground"
                                     readOnly
                                   >{`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
-                                 <DialogFooter>
-                              <Button
-                                onClick={() =>
-                                  handleCopy(
-                                    `<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`
-                                  )
-                                }
-                              >
-                                {copied ? <Check /> : <Clipboard />}
-                                {copied ? "Copiado!" : "Copiar"}
-                              </Button>
-                              <DialogClose asChild>
-                                <Button variant="outline">Fechar</Button>
-                              </DialogClose>
-                            </DialogFooter>
+                                  <DialogFooter>
+                                    <Button
+                                      onClick={() =>
+                                        handleCopy(
+                                          `<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`
+                                        )
+                                      }
+                                    >
+                                      {copied ? <Check /> : <Clipboard />}
+                                      {copied ? "Copiado!" : "Copiar"}
+                                    </Button>
+                                    <DialogClose asChild>
+                                      <Button variant="outline">Fechar</Button>
+                                    </DialogClose>
+                                  </DialogFooter>
                                 </DialogContent>
                               </Dialog>
+
+                              <Button onClick={() => handleShareLink(file)} variant="outline">
+                                <Share />
+                              </Button>
 
                               <Dialog>
                                 <DialogTrigger asChild>
@@ -358,7 +405,9 @@ export default function Documents() {
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-
+                        <Button onClick={() => handleShareLink(file)} variant="outline">
+                          <Globe />
+                        </Button>
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="outline">

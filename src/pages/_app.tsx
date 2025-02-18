@@ -1,4 +1,5 @@
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 import { AppProvider } from "@/contexts";
 import { queryClient } from "@/services/queryClient";
 import "@/styles/globals.css";
@@ -16,6 +17,8 @@ export default function App({ Component, pageProps }: AppProps) {
       >
         <AppProvider>
           <Component {...pageProps} />
+
+          <Toaster />
         </AppProvider>
       </ThemeProvider>
     </QueryClientProvider>

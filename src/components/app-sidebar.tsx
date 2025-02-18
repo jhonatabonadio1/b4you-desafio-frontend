@@ -59,7 +59,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Icons.logo className="h-8 w-8" />
             {state === "expanded" && (
               <span className=" font-bold lg:inline-block text-lg">
-                Incorporae!
+                Incorporaê!
               </span>
             )}
           </Link>

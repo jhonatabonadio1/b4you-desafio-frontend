@@ -122,8 +122,8 @@ export default function Heatmaps() {
 
             <div className="relative flex flex-col h-full w-full gap-4">
               <div className="flex flex-col gap-4 lg:flex-row items-center">
-                <div className="flex w-full flex-row gap-4">
-                  <div className="flex flex-row gap-2 self-start">
+                <div className="flex w-full flex-col lg:flex-row gap-4">
+                  <div className="flex flex-row gap-2 lg:self-start">
                     {!isLoading && (
                       <DocumentsCombobox
                         data={documentsPickerData}
