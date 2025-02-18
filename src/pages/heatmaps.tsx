@@ -29,17 +29,19 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 
 export default function Heatmaps() {
-  const [docId, setDocId] = useState("");
-  const { data, isLoading } = useFiles();
 
-  const [documentsPickerData, setDocumentsPickerData] = useState<
-    { label: string; value: string }[]
-  >([] as { label: string; value: string }[]);
 
   const [pdfUrl, setPdfUrl] = useState("");
 
   const [pageNumber, setPageNumber] = useState(1);
   const [numPages, setNumPages] = useState(1);
+  const { data, isLoading } = useFiles();
+
+  const [docId, setDocId] = useState("")
+
+  const [documentsPickerData, setDocumentsPickerData] = useState<
+  { label: string; value: string }[]
+>([] as { label: string; value: string }[]);
 
   useEffect(() => {
     if (data && data.length > 0) {
@@ -120,11 +122,12 @@ export default function Heatmaps() {
 
             <div className="relative flex flex-col h-full w-full gap-4">
               <div className="flex flex-col gap-4 lg:flex-row items-center">
-                <div className="flex w-full flex-row gap-2">
+                <div className="flex w-full flex-row gap-4">
                   <div className="flex flex-row gap-2 self-start">
                     {!isLoading && (
                       <DocumentsCombobox
                         data={documentsPickerData}
+                        value={docId}
                         onChange={(docId) => setDocId(docId)}
                       />
                     )}
@@ -155,21 +158,22 @@ export default function Heatmaps() {
                   </div>
                 )}
               </div>
-
+              {pdfUrl && (
               <Card className="flex-1 items-center justify-center overflow-auto">
                 <CardHeader className="relative flex flex-row h-full items-center p-0 justify-center">
                   <div className="relative rounded-lg  flex-1">
-                    {pdfUrl && (
+                    
                       <DocumentHeatmapView
                         pdfUrl={pdfUrl}
                         docId={docId as string}
                         page={pageNumber}
                         onLoad={(doc) => onLoadDocument(doc)}
                       />
-                    )}
+        
                   </div>
                 </CardHeader>
               </Card>
+                          )}
             </div>
           </div>
         </SidebarInset>

@@ -26,15 +26,12 @@ interface Props {
     label: string;
   }[];
   onChange: (docId: string) => void;
+  value: string;
 }
 
-export function DocumentsCombobox({ data, onChange }: Props) {
+export function DocumentsCombobox({ data, value, onChange }: Props) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
-
-  React.useEffect(() => {
-    onChange(value)
-  }, [onChange, value])
+ 
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -43,7 +40,7 @@ export function DocumentsCombobox({ data, onChange }: Props) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[300px] justify-between"
+          className="w-full max-w-screen lg:w-[300px] justify-between"
         >
           <span className="truncate">{value
             ? data.find((framework) => framework.value === value)?.label
@@ -51,7 +48,7 @@ export function DocumentsCombobox({ data, onChange }: Props) {
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-full max-w-screen lg:w-[300px] p-0">
         <Command>
           <CommandInput placeholder="Buscar ..." />
           <CommandList>
@@ -62,7 +59,7 @@ export function DocumentsCombobox({ data, onChange }: Props) {
                   key={framework.value}
                   value={framework.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
+                    onChange(currentValue === value ? "" : currentValue);
                     setOpen(false);
                   }}
                 >

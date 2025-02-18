@@ -4,7 +4,6 @@ import {
   FileText,
   Flame,
   GalleryVerticalEnd,
-  Globe,
 } from "lucide-react";
 
 import { NavMenu } from "@/components/nav-menu";
@@ -45,11 +44,6 @@ const data = {
       name: "Análises",
       url: "/analytics",
       icon: ChartColumn,
-    },
-    {
-      name: "Sites",
-      url: "/sites",
-      icon: Globe,
     },
   ],
 };

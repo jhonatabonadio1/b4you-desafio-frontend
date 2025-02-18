@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import NumbersWithBadges from "@/components/analytics/numbers-with-badges";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { api } from "@/services/apiClient";
 
@@ -45,8 +45,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useFiles } from "@/services/hooks/files";
 
 const FormSchema = z.object({
+  docId: z.string(),
   calendar: z.object({
     from: z.date(),
     to: z.date(),
@@ -57,50 +59,94 @@ const FormSchema = z.object({
   }),
 });
 
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-]
+interface TrackingNumbersProps {
+  totalViews: number;
+  totalInteractionTime: number;
+  averageTimePerPage: number;
+  mostInteractedPage: number | null;
+}
+
+interface Pages {
+  pageNumber: number;
+  views: number;
+  averageTime: number;
+  totalTime: number;
+  minTime: number;
+  maxTime: number;
+}
 
 export default function Analytics() {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [trackingNumbers, setTrackingNumbers] =
+    useState<TrackingNumbersProps | null>(null);
 
-  const docId = "67b37b42737e02cad3feb6d8";
-  
+  const [pages, setPages] = useState<Pages[] | null>(null);
+
+  const { data, isLoading: loadingDocs } = useFiles();
+
+  const [documentsPickerData, setDocumentsPickerData] = useState<
+    { label: string; value: string }[]
+  >([] as { label: string; value: string }[]);
+
   useEffect(() => {
-    setIsLoading(true);
-    async function fetchPdf() {
-      if (!docId) return;
-      try {
-        const { data } = await api.get(`/file/${docId}`);
-        setPdfUrl(data.url);
-      } catch (error) {
-        console.error("Erro ao buscar documento:", error);
-      } finally {
-        setIsLoading(false);
+    if (data && data.length > 0) {
+      for (const file of data) {
+        const pickerData = {
+          label: file.title,
+          value: file.id,
+        };
+        setDocumentsPickerData((prev) => [...prev, pickerData]);
       }
     }
-    fetchPdf();
-  }, [docId]);
+  }, [data]);
+
+  async function fetchPdf(
+    docId: string,
+    datas: { dataInicio: string; dataFim: string }
+  ) {
+    if (!docId) return;
+    try {
+      const { data } = await api.get(
+        `/file/${docId}?dataInicio=${datas.dataInicio}&dataFim=${datas.dataFim}`
+      );
+      setPdfUrl(data.url);
+    } catch (error) {
+      console.error("Erro ao buscar documento:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  async function fetchDocTrackingNumbers(
+    docId: string,
+    datas: { dataInicio: string; dataFim: string }
+  ) {
+    try {
+      const { data } = await api.get(
+        `/tracking/${docId}?dataInicio=${datas.dataInicio}&dataFim=${datas.dataFim}`
+      );
+      setTrackingNumbers(data);
+    } catch (error) {
+      console.error("Erro ao buscar documento:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  async function fetchTrackingPages(
+    docId: string,
+    datas: { dataInicio: string; dataFim: string }
+  ) {
+    try {
+      const { data } = await api.get(
+        `/tracking/${docId}/pages?dataInicio=${datas.dataInicio}&dataFim=${datas.dataFim}`
+      );
+      setPages(data);
+    } catch (error) {
+      console.error("Erro ao buscar documento:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -117,7 +163,16 @@ export default function Analytics() {
   });
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    console.log("oi");
+    const { docId } = data;
+
+    const datas = {
+      dataInicio: data.calendar.from.toISOString(),
+      dataFim: data.calendar.to.toISOString(),
+    };
+
+    fetchPdf(docId, datas);
+    fetchDocTrackingNumbers(docId, datas);
+    fetchTrackingPages(docId, datas);
   };
 
   return (
@@ -167,26 +222,34 @@ export default function Analytics() {
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="flex flex-row items-end gap-4 self-start"
+                  className="flex flex-col lg:flex-row items-end gap-4 w-full lg:w-auto self-start"
                 >
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4 w-full lg:w-auto">
                     <FormField
                       control={form.control}
                       name="calendar"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="flex flex-col">
                           <FormLabel className="text-md font-normal">
                             Documento
                           </FormLabel>
                           <FormControl className="w-full">
-                            <DocumentsCombobox data={frameworks} onChange={() => {}}/>
+                            {!loadingDocs && (
+                              <DocumentsCombobox
+                                data={documentsPickerData}
+                                value={form.watch("docId")}
+                                onChange={(docId) =>
+                                  form.setValue("docId", docId)
+                                }
+                              />
+                            )}
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4 w-full lg:w-auto">
                     <FormField
                       control={form.control}
                       name="calendar"
@@ -209,52 +272,83 @@ export default function Analytics() {
                       )}
                     />
                   </div>
-                  <Button variant="default" type="submit" className="w-full">
+                  <Button
+                    variant="default"
+                    type="submit"
+                    className="w-full lg:w-auto"
+                    disabled={!form.watch("docId")}
+                  >
                     Analisar
                   </Button>
                 </form>
               </Form>
 
-              <NumbersWithBadges />
+              {trackingNumbers && <NumbersWithBadges data={trackingNumbers} />}
 
-              <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 flex-1">
-                {/* Card */}
-                <Card>
-                  <CardContent className="pt-6 h-full">
-                    <div className="overflow-hidden rounded-lg h-full">
-                      {pdfUrl && (
-                        <object
-                          data={pdfUrl ?? ""}
-                          type="application/pdf"
-                          className=" h-full w-full"
-                        >
-                          <p>Seu navegador não suporta visualização de PDFs.</p>
-                        </object>
+              {pdfUrl && !loadingDocs && (
+                <div className="grid sm:grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 flex-1">
+                  {/* Card */}
+                  <Card>
+                    <CardContent className="pt-6 h-full">
+                      <div className="overflow-hidden rounded-lg h-full">
+                        {pdfUrl && (
+                          <object
+                            data={pdfUrl ?? ""}
+                            type="application/pdf"
+                            className=" h-full w-full"
+                          >
+                            <p>
+                              Seu navegador não suporta visualização de PDFs.
+                            </p>
+                          </object>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Dados coletados</CardTitle>
+                    </CardHeader>
+                    <CardContent className="max-h-[500px] overflow-y-auto">
+                      {pages && (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[100px]">
+                                Página
+                              </TableHead>
+                              <TableHead>Visualizações</TableHead>
+                              <TableHead>Tempo médio.</TableHead>
+                              <TableHead>Tempo total</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {pages.map((item) => (
+                              <TableRow key={item.pageNumber}>
+                                <TableCell className="font-medium">
+                                  {item.pageNumber}
+                                </TableCell>
+                                <TableCell>{item.views}</TableCell>
+
+                                <TableCell>
+                                  {item.averageTime < 60
+                                    ? item.averageTime + "s"
+                                    : item.averageTime + " min"}
+                                </TableCell>
+                                <TableCell>
+                                  {item.totalTime < 60
+                                    ? item.totalTime + "s"
+                                    : item.totalTime + " min"}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="pt-6">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[100px]">Página</TableHead>
-                          <TableHead>Visualizações</TableHead>
-                          <TableHead>Tempo médio</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        <TableRow>
-                          <TableCell className="font-medium">1</TableCell>
-                          <TableCell>23</TableCell>
-                          <TableCell>12 segundos</TableCell>
-                        </TableRow>
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </div>
           </div>
         </SidebarInset>

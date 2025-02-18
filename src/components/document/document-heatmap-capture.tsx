@@ -3,7 +3,6 @@
 import { throttle } from "lodash";
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { Button } from "../ui/button";
 import { api } from "@/services/apiClient";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -285,10 +284,6 @@ export function DocumentHeatmapCapture({ pdfUrl, docId }: Props) {
           }`}
         />
       </Document>
-
-      <Button onClick={enviaLote} className="mt-4">
-        Enviar Lote
-      </Button>
     </div>
   );
 }
