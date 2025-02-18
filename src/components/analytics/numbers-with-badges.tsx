@@ -59,12 +59,12 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
                 data.totalInteractionTime < 60 ?     <div>
                 <h3 className="text-2xl font-semibold">{data.totalInteractionTime.toFixed(2).replace(".", ",")} s</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Segundos de interação
+                  Tempo no total
                 </p>
               </div> :     <div>
                 <h3 className="text-2xl font-semibold">{(data.totalInteractionTime / 60).toFixed(2).replace(".", ",")} min</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Minutos de interação
+                Tempo no total
                 </p>
               </div>
               }
@@ -84,9 +84,9 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
               
               </div>
               <div>
-                <h3 className="text-2xl font-semibold">{data.mostInteractedPage ?? "Sem dados"}</h3>
+                <h3 className="text-2xl font-semibold">{data.mostInteractedPage ? "Pg. " + data.mostInteractedPage :  "Sem dados"}</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Maior tempo de interação
+                  Página em destaque
                 </p>
               </div>
             </div>
@@ -108,12 +108,12 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
                 data.averageTimePerPage < 120 ?     <div>
                 <h3 className="text-2xl font-semibold">{data.averageTimePerPage.toFixed(2).replace(".", ",")} s</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Segundos
+                Tempo por página
                 </p>
               </div> :     <div>
                 <h3 className="text-2xl font-semibold">{(data.averageTimePerPage / 60).toFixed(2).replace(".", ",")} min</h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Minutos
+                  Tempo por página
                 </p>
               </div>
               }

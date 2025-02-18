@@ -98,7 +98,7 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
       } else {
       }
     } catch (error) {
-      console.error("Erro ao buscar heatmaps:", error);
+      console.log("Erro ao buscar heatmaps:", error);
     }
   }
 
