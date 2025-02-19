@@ -5,6 +5,9 @@ import { withSSRGuest } from "@/utils/withSSRGuest";
 import Head from "next/head";
 
 export default function RecoverPassword() {
+
+  
+  
   return (
     <>
       <Head>
