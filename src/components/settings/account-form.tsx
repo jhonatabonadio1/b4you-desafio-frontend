@@ -1,57 +1,85 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
-
-import { Label } from "../ui/label";
-import { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { useContext, useEffect, useState } from "react";
 import { Icons } from "../icons";
 
-const accountSchema = z
-  .object({
-    firstName: z.string().min(2, "Mínimo de 2 caracteres"),
-    lastName: z.string().min(2, "Mínimo de 2 caracteres"),
-    email: z.string().email("E-mail inválido"),
-    empresa: z.string().optional(),
-    password: z.string().min(6, "Mínimo de 6 caracteres"),
-  })
- 
+import { api } from "@/services/apiClient";
+import { toast } from "@/hooks/use-toast";
+import { AuthContext } from "@/contexts/AuthContext";
+
+const accountSchema = z.object({
+  firstName: z.string().min(2, "Mínimo de 2 caracteres"),
+  lastName: z.string().min(2, "Mínimo de 2 caracteres"),
+  email: z.string().email("E-mail inválido"),
+  empresa: z.string().optional(),
+});
 
 export function AccountForm() {
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { user, updateUser } = useContext(AuthContext);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<z.infer<typeof accountSchema>>({
     resolver: zodResolver(accountSchema),
+
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      email: user?.email || "",
+      empresa: user?.empresa || "",
+    },
   });
+
+  useEffect(() => {
+    if (user) {
+      reset({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        empresa: user.empresa,
+      });
+    }
+  }, [user, reset]);
 
   const onSubmit = async (data: z.infer<typeof accountSchema>) => {
     setLoading(true);
-    setError(null);
 
-    const errorMessage = "";
+    try {
+      const response = await api.put("/users", data);
 
-    if (errorMessage) {
-      setError(errorMessage);
+      toast({
+        title: "Sucesso!",
+        description: "Usuário alterado com sucesso.",
+        variant: "default",
+      });
+
+      reset();
+      updateUser(response.data);
+    } catch (err: any) {
+      toast({
+        title: "Erro!",
+        description: err.response?.data?.error || "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
       <div className="grid grid-cols-2 gap-4">
-        {/* Nome e Sobrenome */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="first-name">Nome</Label>
           <Input
@@ -75,7 +103,6 @@ export function AccountForm() {
           )}
         </div>
 
-        {/* E-mail e Empresa */}
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">E-mail</Label>
           <Input
@@ -96,27 +123,14 @@ export function AccountForm() {
             {...register("empresa")}
           />
         </div>
-
-        {/* Senha e Confirmar Senha */}
-        <div className="flex flex-col gap-2 col-span-2">
-          <Label htmlFor="password">Senha</Label>
-          <Input
-            id="password"
-            type="password"
-            placeholder="*******"
-            {...register("password")}
-          />
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password.message}</p>
-          )}
-        </div>
-       
-
-       
       </div>
-      <Button type="submit" className="mt-3 col-span-2 m" disabled={loading}>
-          {loading ? <Icons.spinner className="animate-spin" /> : "Salvar alterações"}
-        </Button>
+      <Button type="submit" className="mt-3 col-span-2" disabled={loading}>
+        {loading ? (
+          <Icons.spinner className="animate-spin" />
+        ) : (
+          "Salvar alterações"
+        )}
+      </Button>
     </form>
   );
 }

@@ -47,6 +47,7 @@ type AuthContextData = {
   user: User;
   isAuthenticated: boolean;
   isLoadingPage: boolean;
+  updateUser: (user: User) => void;
 };
 
 type AuthProviderProps = {
@@ -110,6 +111,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     fetchCsrfToken();
   }, []);
+
+  function updateUser(user: User){
+    setUser(user)
+  }
 
   async function signIn({
     userData,
@@ -190,6 +195,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     <AuthContext.Provider
       value={{
         signIn,
+        updateUser,
         signOut,
         user,
         signUp,
