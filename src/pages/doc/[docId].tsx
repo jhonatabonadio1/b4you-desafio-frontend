@@ -2,7 +2,6 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState, useEffect, useRef } from "react";
 
-import { MoonLoader } from "react-spinners";
 import { api } from "@/services/apiClient";
 import Head from "next/head";
 import { DocumentHeatmapCapture } from "@/components/document/document-heatmap-capture";
@@ -51,7 +50,7 @@ export default function Doc() {
         <div className="w-screen h-screen flex items-center justify-center">
           {isLoading || !pdfUrl ? (
             <div className="absolute inset-0 flex items-center justify-center z-60">
-              <MoonLoader size={34} />
+               <Icons.spinner className="text-primary animate-spin"/>
             </div>
           ) : (
             <>

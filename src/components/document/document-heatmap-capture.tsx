@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { throttle } from "lodash";
-import {  RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { api } from "@/services/apiClient";
 import {
@@ -17,7 +17,8 @@ import {
 import { useMetaColor } from "@/hooks/use-meta-color";
 import { useTheme } from "next-themes";
 import { META_THEME_COLORS } from "@/config/site";
-import { MoonLoader } from "react-spinners";
+
+import { Icons } from "../icons";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
@@ -33,7 +34,11 @@ interface PagesProps {
   page: number;
 }
 
-export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) {
+export function DocumentHeatmapCapture({
+  pdfUrl,
+  docId,
+  fullscreenRef,
+}: Props) {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [isPageRendered, setIsPageRendered] = useState(false);
@@ -51,17 +56,16 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     }
   }, [containerWidth, pages]);
 
-
   const [zoom, setZoom] = useState(1); // fator de zoom que o usuário controla
 
   function zoomIn() {
-    const max = 2
-    setZoom((prev) => prev < max ? prev * 1.2 : prev);
+    const max = 2;
+    setZoom((prev) => (prev < max ? prev * 1.2 : prev));
   }
 
   function zoomOut() {
-    const max = 1
-    setZoom((prev) => prev > max ? prev / 1.2 : prev);
+    const max = 1;
+    setZoom((prev) => (prev > max ? prev / 1.2 : prev));
   }
 
   const [alreadyCreatedWebsocket, setAlreadyCreatedWebsocket] = useState(false);
@@ -69,20 +73,19 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLCanvasElement>(null);
 
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement);
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
-
 
   useEffect(() => {
     if (!isFullscreen) {
-     
       sessionStorage.removeItem("heatmaps");
     }
     createSession();
@@ -148,9 +151,6 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     setIsPageRendered(false);
   }, [pageNumber]);
 
-
- 
-
   function prevPage() {
     if (pageNumber > 1) setPageNumber((prev) => prev - 1);
   }
@@ -160,42 +160,41 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
   }
 
   useEffect(() => {
-    const targetElement =  containerRef.current;
+    const targetElement = containerRef.current;
     if (!targetElement || pages.length === 0 || !pageRef.current) return;
-
 
     const throttledMouseMove = throttle((e: MouseEvent) => {
       const rect = pageRef.current!.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    
-    if (isFullscreen) {
-      // Calcula a escala baseada nas dimensões originais do PDF
-      const scaleX = rect.width / pages[0].width;
-      const scaleY = rect.height / pages[0].height;
-      const effectiveScale = Math.min(scaleX, scaleY);
-      
-      // Calcula a área efetivamente renderizada do PDF
-      const renderedWidth = pages[0].width * effectiveScale;
-      const renderedHeight = pages[0].height * effectiveScale;
-      
-      // Determina os offsets (margens) gerados ao centralizar o PDF no canvas
-      const offsetX = (rect.width - renderedWidth) / 2;
-      const offsetY = (rect.height - renderedHeight) / 2;
-      
-      // Ajusta as coordenadas removendo o offset
-      x = x - offsetX;
-      y = y - offsetY;
-    }
-    
-    processMovement(x, y);
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
+
+      if (isFullscreen) {
+        // Calcula a escala baseada nas dimensões originais do PDF
+        const scaleX = rect.width / pages[0].width;
+        const scaleY = rect.height / pages[0].height;
+        const effectiveScale = Math.min(scaleX, scaleY);
+
+        // Calcula a área efetivamente renderizada do PDF
+        const renderedWidth = pages[0].width * effectiveScale;
+        const renderedHeight = pages[0].height * effectiveScale;
+
+        // Determina os offsets (margens) gerados ao centralizar o PDF no canvas
+        const offsetX = (rect.width - renderedWidth) / 2;
+        const offsetY = (rect.height - renderedHeight) / 2;
+
+        // Ajusta as coordenadas removendo o offset
+        x = x - offsetX;
+        y = y - offsetY;
+      }
+
+      processMovement(x, y);
     }, 300);
-  
+
     // Função wrapper que recebe um Event, converte para MouseEvent e chama a função throttled
     const mouseMoveListener = (e: Event) => {
       throttledMouseMove(e as MouseEvent);
     };
-  
+
     const handleTouchMove = throttle((e: TouchEvent) => {
       // Usamos o primeiro toque para capturar as coordenadas
       const touch = e.touches[0];
@@ -204,26 +203,28 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
       const y = touch.clientY - rect.top;
       processMovement(x, y);
     }, 300);
-    
+
     const touchMoveListener = (e: Event) => {
       handleTouchMove(e as TouchEvent);
-    }
-  
+    };
+
     targetElement.addEventListener("mousemove", mouseMoveListener);
-    targetElement.addEventListener("touchmove", touchMoveListener, { passive: true });
-  
+    targetElement.addEventListener("touchmove", touchMoveListener, {
+      passive: true,
+    });
+
     return () => {
       targetElement.removeEventListener("mousemove", mouseMoveListener);
       targetElement.removeEventListener("touchmove", touchMoveListener);
     };
   }, [isFullscreen, zoom, pageNumber, pages, scale, containerRef, pageRef]);
-  
+
   function processMovement(x: number, y: number) {
     const currentPage = pages.find((p) => p.page === pageNumber);
     if (!currentPage) return;
-  
+
     let effectiveScale: number;
-  
+
     if (isFullscreen && pageRef.current) {
       // Obter as dimensões reais do canvas
       const rect = pageRef.current.getBoundingClientRect();
@@ -231,15 +232,15 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
       const scaleX = rect.width / pages[0].width;
       const scaleY = rect.height / pages[0].height;
       effectiveScale = Math.min(scaleX, scaleY);
-  
+
       // Calcula o tamanho real renderizado do PDF
       const renderedWidth = pages[0].width * effectiveScale;
       const renderedHeight = pages[0].height * effectiveScale;
-  
+
       // Determina os offsets (margens) se o PDF estiver centralizado (letterboxing)
       const offsetX = (rect.width - renderedWidth) / 2;
       const offsetY = (rect.height - renderedHeight) / 2;
-  
+
       // Ajusta as coordenadas removendo os offsets
       x = x - offsetX;
       y = y - offsetY;
@@ -248,13 +249,13 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     } else {
       effectiveScale = scale;
     }
-  
+
     // Se não estiver em fullscreen, a conversão precisa considerar o zoom (pois o container não reflete o zoom aplicado)
     // Em fullscreen, effectiveScale já inclui o zoom.
     const divisor = isFullscreen ? effectiveScale : effectiveScale * zoom;
     const originalX = x / divisor;
     const originalY = y / divisor;
-  
+
     const newHeatmapData = {
       x: originalX,
       y: originalY,
@@ -263,13 +264,11 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
       pageHeight: currentPage.height,
       page: pageNumber,
     };
-  
+
     const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
     heatmaps.push(newHeatmapData);
     sessionStorage.setItem("heatmaps", JSON.stringify(heatmaps));
   }
-  
-  
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -328,7 +327,7 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
   function openWebSocket() {
     if (!sessionId) return;
 
-    const socket = new WebSocket("ws://localhost:8080");
+    const socket = new WebSocket("ws://192.168.0.11:8080");
 
     socket.onopen = () => {
       setAlreadyCreatedWebsocket(true);
@@ -388,8 +387,6 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
     );
   }, [resolvedTheme, setTheme, setMetaColor]);
 
-
-
   function toggleFullScreen() {
     if (!document.fullscreenElement) {
       fullscreenRef.current
@@ -398,113 +395,108 @@ export function DocumentHeatmapCapture({ pdfUrl, docId, fullscreenRef }: Props) 
           console.error("Erro ao tentar entrar no modo fullscreen:", err)
         );
     } else {
-      document.exitFullscreen().catch((err) =>
-        console.error("Erro ao tentar sair do modo fullscreen:", err)
-      );
+      document
+        .exitFullscreen()
+        .catch((err) =>
+          console.error("Erro ao tentar sair do modo fullscreen:", err)
+        );
     }
   }
-  
 
   return (
     <>
-    <div
-      ref={containerRef}
-      id="container"
-      className="w-full relative max-h-screen overflow-auto"
-    >
-     
-      <Document
-        file={pdfUrl}
-        onLoadSuccess={onDocumentLoadSuccess}
-        
-        loading={
-          <div className="fixed inset-0 flex items-center justify-center z-60">
-            <MoonLoader size={34} />
-          </div>
-        }
+      <div
+        ref={containerRef}
+        id="container"
+        className="w-full relative max-h-screen overflow-auto"
       >
-        <Page
-          canvasRef={pageRef}
-          loading=""
-          key={pageNumber}
-          pageNumber={pageNumber}
-          renderTextLayer={false}
-          scale={1 * zoom}
-          
-          renderAnnotationLayer={false}
-          width={containerWidth || undefined} // Escala automática para tela
-          onRenderSuccess={onPageRenderSuccess}
-          className={`transition-opacity duration-500 ease-in-out z-70 ${
-            isPageRendered ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      </Document>
-
-      
-    </div>
-     {numPages && (
-      <div className="fixed pointer-events-auto bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-        <div className="flex items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
-          <button
-            onClick={zoomIn}
-            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.50s" }}
-          >
-            <ZoomIn />
-          </button>
-
-          <button
-            onClick={zoomOut}
-            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.25s" }}
-          >
-            <ZoomOut />
-          </button>
-
-          <button
-            onClick={prevPage}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <ChevronLeft />
-          </button>
-
-          <span
-            className="text-foreground opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.75s" }}
-          >
-            {pageNumber} de {numPages}
-          </span>
-
-          <button
-            onClick={nextPage}
-            disabled={numPages <= 1}
-            className="bg-primary hover:bg-primary/90  text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <ChevronRight />
-          </button>
-
-          <button
-            onClick={toggleTheme}
-            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.25s" }}
-          >
-            <SunIcon className="hidden dark:block" />
-            <MoonIcon className="block dark:hidden" />
-          </button>
-
-          <button
-            onClick={toggleFullScreen}
-            className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-            style={{ animationDelay: "0.50s" }}
-          >
-            <Fullscreen />
-          </button>
-        </div>
+        <Document
+          file={pdfUrl}
+          onLoadSuccess={onDocumentLoadSuccess}
+          loading={
+            <div className="fixed inset-0 flex items-center justify-center z-60">
+              <Icons.spinner className="text-primary animate-spin"/>
+            </div>
+          }
+        >
+          <Page
+            canvasRef={pageRef}
+            loading=""
+            key={pageNumber}
+            pageNumber={pageNumber}
+            renderTextLayer={false}
+            scale={1 * zoom}
+            renderAnnotationLayer={false}
+            width={containerWidth || undefined} // Escala automática para tela
+            onRenderSuccess={onPageRenderSuccess}
+            className={`transition-opacity duration-500 ease-in-out z-70 ${
+              isPageRendered ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        </Document>
       </div>
-    )}
+      {numPages && (
+        <div className="fixed pointer-events-auto bottom-4 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="flex items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
+            <button
+              onClick={zoomIn}
+              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.50s" }}
+            >
+              <ZoomIn />
+            </button>
 
-</>
+            <button
+              onClick={zoomOut}
+              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.25s" }}
+            >
+              <ZoomOut />
+            </button>
+
+            <button
+              onClick={prevPage}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <ChevronLeft />
+            </button>
+
+            <span
+              className="text-foreground opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.75s" }}
+            >
+              {pageNumber} de {numPages}
+            </span>
+
+            <button
+              onClick={nextPage}
+              disabled={numPages <= 1}
+              className="bg-primary hover:bg-primary/90  text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <ChevronRight />
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.25s" }}
+            >
+              <SunIcon className="hidden dark:block" />
+              <MoonIcon className="block dark:hidden" />
+            </button>
+
+            <button
+              onClick={toggleFullScreen}
+              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+              style={{ animationDelay: "0.50s" }}
+            >
+              <Fullscreen />
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

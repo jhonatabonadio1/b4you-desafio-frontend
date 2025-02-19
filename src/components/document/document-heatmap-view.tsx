@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import h337 from "heatmap.js";
 import { api } from "@/services/apiClient";
-import { MoonLoader } from "react-spinners";
+import { Icons } from "../icons";
 
 // Configuração do worker do PDF
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -171,7 +171,7 @@ export function DocumentHeatmapView({ pdfUrl, docId, page, onLoad }: Props) {
         onLoadSuccess={onDocumentLoadSuccess}
         loading={
           <div className="absolute w-full h-full bg-black/20 inset-0 flex items-center justify-center z-60">
-            <MoonLoader size={34} />
+             <Icons.spinner className="text-primary animate-spin"/>
           </div>
         }
       >
