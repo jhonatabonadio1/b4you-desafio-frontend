@@ -137,7 +137,7 @@ export default function Documents() {
         prev.filter((item) => item.name !== doc.name)
       );
     } catch (error) {
-      console.error("Erro ao deletar arquivo:", error);
+      console.log("Erro ao deletar arquivo:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -260,7 +260,9 @@ export default function Documents() {
                         <CardHeader>
                           <div className="flex flex-col gap-1">
                             <div className="flex flex-row items-center gap-2">
-                              <span className="truncate">{file.name}</span>
+                              <span className="truncate max-w-full">
+                                {file.name}
+                              </span>
                               <Badge>{file.size}</Badge>
                             </div>
                             <small className="text-muted-foreground">
@@ -362,12 +364,17 @@ export default function Documents() {
                 {filteredServerFiles.map((file: any) => (
                   <Card
                     key={file.id}
-                    className="flex flex-col justify-between relative aspect-video"
+                    className="flex flex-col max-w-full overflow-hidden justify-between relative aspect-video"
                   >
                     <CardHeader>
                       <div className="flex flex-col gap-1">
-                        <div className="flex flex-row items-center gap-2">
-                          <span className="truncate">{file.title}</span>
+                        <div className="flex  flex-row items-center gap-2">
+                        
+                            <span className="truncate">
+                              {file.title}
+                            </span>
+                      
+
                           <Badge>
                             {(file.sizeInBytes / 1024 / 1024).toFixed(2)}MB
                           </Badge>

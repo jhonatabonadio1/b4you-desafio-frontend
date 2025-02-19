@@ -290,7 +290,7 @@ export function DocumentHeatmapCapture({
       await api.post("/heatmaps/lote", { docId, sessionId, lote: heatmaps });
       sessionStorage.removeItem("heatmaps");
     } catch (error: any) {
-      console.error(
+      console.log(
         "[HEATMAP] Erro ao enviar lote:",
         error.response?.data?.message || "Erro desconhecido"
       );
@@ -388,18 +388,20 @@ export function DocumentHeatmapCapture({
   }, [resolvedTheme, setTheme, setMetaColor]);
 
   function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-      fullscreenRef.current
-        ?.requestFullscreen()
-        .catch((err) =>
-          console.error("Erro ao tentar entrar no modo fullscreen:", err)
-        );
-    } else {
-      document
-        .exitFullscreen()
-        .catch((err) =>
-          console.error("Erro ao tentar sair do modo fullscreen:", err)
-        );
+    if (document.fullscreenEnabled) {
+      if (!document.fullscreenElement) {
+        fullscreenRef.current
+          ?.requestFullscreen()
+          .catch((err) =>
+            console.log("Erro ao tentar entrar no modo fullscreen:", err)
+          );
+      } else {
+        document
+          .exitFullscreen()
+          .catch((err) =>
+            console.log("Erro ao tentar sair do modo fullscreen:", err)
+          );
+      }
     }
   }
 
@@ -415,7 +417,7 @@ export function DocumentHeatmapCapture({
           onLoadSuccess={onDocumentLoadSuccess}
           loading={
             <div className="fixed inset-0 flex items-center justify-center z-60">
-              <Icons.spinner className="text-primary animate-spin"/>
+              <Icons.spinner className="text-primary animate-spin" />
             </div>
           }
         >
@@ -436,64 +438,67 @@ export function DocumentHeatmapCapture({
         </Document>
       </div>
       {numPages && (
-        <div className="fixed pointer-events-auto bottom-4 left-1/2 transform -translate-x-1/2 z-10">
-          <div className="flex items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
-            <button
-              onClick={zoomIn}
-              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.50s" }}
-            >
-              <ZoomIn />
-            </button>
+        <div className="fixed bottom-4 left-0 w-full px-4">
+          <div className="flex justify-center items-center gap-4 w-full max-w-[600px] mx-auto">
+            <div className="flex w-full  justify-around items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
+              <button
+                onClick={zoomIn}
+                className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.50s" }}
+              >
+                <ZoomIn />
+              </button>
 
-            <button
-              onClick={zoomOut}
-              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.25s" }}
-            >
-              <ZoomOut />
-            </button>
+              <button
+                onClick={zoomOut}
+                className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.25s" }}
+              >
+                <ZoomOut />
+              </button>
 
-            <button
-              onClick={prevPage}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.1s" }}
-            >
-              <ChevronLeft />
-            </button>
+              <button
+                onClick={prevPage}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.1s" }}
+              >
+                <ChevronLeft />
+              </button>
 
-            <span
-              className="text-foreground opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.75s" }}
-            >
-              {pageNumber} de {numPages}
-            </span>
+              <span
+                className="text-foreground opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.75s" }}
+              >
+                {pageNumber} de {numPages}
+              </span>
 
-            <button
-              onClick={nextPage}
-              disabled={numPages <= 1}
-              className="bg-primary hover:bg-primary/90  text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.1s" }}
-            >
-              <ChevronRight />
-            </button>
+              <button
+                onClick={nextPage}
+                disabled={numPages <= 1}
+                className="bg-primary hover:bg-primary/90  text-primary-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.1s" }}
+              >
+                <ChevronRight />
+              </button>
 
-            <button
-              onClick={toggleTheme}
-              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.25s" }}
-            >
-              <SunIcon className="hidden dark:block" />
-              <MoonIcon className="block dark:hidden" />
-            </button>
+              <button
+                onClick={toggleTheme}
+                className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.25s" }}
+              >
+                <SunIcon className="hidden dark:block" />
+                <MoonIcon className="block dark:hidden" />
+              </button>
 
-            <button
-              onClick={toggleFullScreen}
-              className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
-              style={{ animationDelay: "0.50s" }}
-            >
-              <Fullscreen />
-            </button>
+              <button
+                onClick={toggleFullScreen}
+                className="bg-transparent hover:bg-foreground hover:text-primary-foreground transition border border-border text-foreground p-2 rounded-full opacity-0 animate-fadeIn"
+                style={{ animationDelay: "0.50s" }}
+                disabled={!document.fullscreenEnabled}
+              >
+                <Fullscreen />
+              </button>
+            </div>
           </div>
         </div>
       )}
