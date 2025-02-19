@@ -23,8 +23,13 @@ const signUpSchema = z.object({
   lastName: z.string().min(2, "Mínimo de 2 caracteres"),
   email: z.string().email("E-mail inválido"),
   empresa: z.string().optional(),
-  password: z.string().min(6, "Mínimo de 6 caracteres"),
-  confirmPassword: z.string().min(6, "Mínimo de 6 caracteres"),
+  password: z.string()
+  .min(8, "A senha deve ter pelo menos 8 caracteres")
+  .regex(
+    /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/,
+    "Pelo menos 1 caractere especial e 1 leletra maiúscula"
+  ),
+  confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],

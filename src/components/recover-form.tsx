@@ -15,7 +15,12 @@ import { Icons } from "./icons";
 
 const schema = z
   .object({
-    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+    password: z.string()
+    .min(8, "A senha deve ter pelo menos 8 caracteres")
+    .regex(
+      /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/,
+          "Pelo menos 1 caractere especial e 1 leletra maiúscula"
+    ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
