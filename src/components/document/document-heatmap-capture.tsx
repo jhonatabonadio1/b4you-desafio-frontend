@@ -327,7 +327,7 @@ export function DocumentHeatmapCapture({
   function openWebSocket() {
     if (!sessionId) return;
 
-    const socket = new WebSocket("ws://192.168.0.11:8080");
+    const socket = new WebSocket("ws://localhost:8080");
 
     socket.onopen = () => {
       setAlreadyCreatedWebsocket(true);
@@ -439,7 +439,7 @@ export function DocumentHeatmapCapture({
       </div>
       {numPages && (
         <div className="fixed bottom-4 left-0 w-full px-4">
-          <div className="flex justify-center items-center gap-4 w-full max-w-[600px] mx-auto">
+          <div className="flex justify-center items-center gap-4 w-full max-w-[400px] mx-auto">
             <div className="flex w-full  justify-around items-center gap-2 p-2 rounded-full bg-card lg:w-autobg-background shadow-md origin-center animate-expandHorizontal">
               <button
                 onClick={zoomIn}

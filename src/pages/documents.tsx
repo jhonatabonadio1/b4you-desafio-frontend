@@ -2,6 +2,8 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeSwitcher } from "@/components/mode-switcher";
 import { Badge } from "@/components/ui/badge";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -149,33 +151,11 @@ export default function Documents() {
 
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = (embedCode: string) => {
-    navigator.clipboard.writeText(embedCode);
-    setCopied(true);
-
-    setTimeout(() => setCopied(false), 2000); // Reseta o estado após 2s
-  };
-
-  // NOVA FUNÇÃO: copia o link de compartilhamento do documento
-  const handleShareLink = (file: any) => {
-    if (file.id) {
-      const shareLink = `http://localhost:3000/doc/${file.id}`;
-      navigator.clipboard
-        .writeText(shareLink)
-        .then(() => {
-          toast({
-            variant: "default",
-            title: "Link copiado com sucesso",
-          });
-        })
-        .catch(() => {
-          toast({
-            variant: "destructive",
-            title: "Opa! Algo deu errado.",
-            description: "Ocorreu um problema com sua solicitação.",
-          });
-        });
-    }
+  const handleShareLink = () => {
+    toast({
+      variant: "default",
+      title: "Link copiado com sucesso",
+    });
   };
 
   return (
@@ -295,16 +275,16 @@ export default function Documents() {
                                     readOnly
                                   >{`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
                                   <DialogFooter>
-                                    <Button
-                                      onClick={() =>
-                                        handleCopy(
-                                          `<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`
-                                        )
-                                      }
+                                    <CopyToClipboard
+                                      text={`http://localhost:3000/doc/${file.id}`}
                                     >
-                                      {copied ? <Check /> : <Clipboard />}
-                                      {copied ? "Copiado!" : "Copiar"}
-                                    </Button>
+                                      <Button
+                                        onClick={() => handleShareLink()}
+                                        variant="outline"
+                                      >
+                                        <Globe />
+                                      </Button>
+                                    </CopyToClipboard>
                                     <DialogClose asChild>
                                       <Button variant="outline">Fechar</Button>
                                     </DialogClose>
@@ -313,7 +293,7 @@ export default function Documents() {
                               </Dialog>
 
                               <Button
-                                onClick={() => handleShareLink(file)}
+                                onClick={() => handleShareLink()}
                                 variant="outline"
                               >
                                 <Share />
@@ -369,11 +349,7 @@ export default function Documents() {
                     <CardHeader>
                       <div className="flex flex-col gap-1">
                         <div className="flex  flex-row items-center gap-2">
-                        
-                            <span className="truncate">
-                              {file.title}
-                            </span>
-                      
+                          <span className="truncate">{file.title}</span>
 
                           <Badge>
                             {(file.sizeInBytes / 1024 / 1024).toFixed(2)}MB
@@ -404,28 +380,40 @@ export default function Documents() {
                               className="text-muted-foreground"
                             >{`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
                             <DialogFooter>
-                              <Button
-                                onClick={() =>
-                                  handleCopy(
-                                    `<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`
-                                  )
-                                }
+                              <CopyToClipboard
+                                text={`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}
+                                onCopy={() => {
+                                  setCopied(true);
+                                  setTimeout(() => {
+                                    setCopied(false);
+                                  }, 3000);
+                                }}
                               >
-                                {copied ? <Check /> : <Clipboard />}
-                                {copied ? "Copiado!" : "Copiar"}
-                              </Button>
+                                <Button>
+                                  {copied ? <Check /> : <Clipboard />}
+                                  {copied ? "Copiado!" : "Copiar"}
+                                </Button>
+                              </CopyToClipboard>
                               <DialogClose asChild>
                                 <Button variant="outline">Fechar</Button>
                               </DialogClose>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
-                        <Button
-                          onClick={() => handleShareLink(file)}
-                          variant="outline"
+
+                     
+
+                        <CopyToClipboard
+                          text={`http://localhost:3000/doc/${file.id}`}
                         >
-                          <Globe />
-                        </Button>
+                          <Button
+                            onClick={() => handleShareLink()}
+                            variant="outline"
+                          >
+                            <Globe />
+                          </Button>
+                        </CopyToClipboard>
+
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="outline">
