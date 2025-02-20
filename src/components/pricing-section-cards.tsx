@@ -12,7 +12,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 import { CheckIcon } from "lucide-react";
-import React, { useState } from "react";
+import React, { FormEvent, useContext, useState } from "react";
+import { Icons } from "./icons";
+
+import { useRouter } from "next/router";
+import { AuthContext } from "@/contexts/AuthContext";
 
 export function PricingSectionCards() {
   const [isAnnual, setIsAnnual] = useState(true);
@@ -30,6 +34,11 @@ export function PricingSectionCards() {
       description:
         "Ideal para pequenos negócios que precisam de mais flexibilidade.",
       price: { monthly: "R$29", monthlyAnual: "R$21", annual: "R$210" },
+      priceIds: {
+        monthly: "price_1QtGnfHzpmX6bB8FBm9spoYi",
+        annual: "price_1QtGnfHzpmX6bB8FC2HxAs4I",
+      },
+      lookup: "prod_RmqUnCHaHgTbcQ",
       features: ["50 PDFs", "2GB", "10 e-mails privados", "Iframe 3 Domínios"],
     },
     {
@@ -37,6 +46,11 @@ export function PricingSectionCards() {
       description:
         "Para empresas que necessitam de um alto volume de documentos.",
       price: { monthly: "R$79", monthlyAnual: "R$71", annual: "R$710" },
+      lookup: "prod_RmqVlpNleKwV69",
+      priceIds: {
+        monthly: "price_1QtGoGHzpmX6bB8FqXtMBsp4",
+        annual: "price_1QtGpKHzpmX6bB8Fn9IYecp6",
+      },
       features: [
         "200 PDFs",
         "10GB",
@@ -49,6 +63,11 @@ export function PricingSectionCards() {
       name: "Business",
       description: "Solução completa para grandes empresas e alta demanda.",
       price: { monthly: "R$199", monthlyAnual: "R$179", annual: "R$1799" },
+      lookup: "prod_RmqXRjx7hDRVsB",
+      priceIds: {
+        monthly: "price_1QtGqUHzpmX6bB8FHEGqYVn1",
+        annual: "price_1QtGqUHzpmX6bB8FGNJPTtlT",
+      },
       features: [
         "1000 PDFs",
         "50GB",
@@ -60,6 +79,47 @@ export function PricingSectionCards() {
       ],
     },
   ];
+
+  interface Plan {
+    name: string;
+    description: string;
+    price: {
+      monthly: string;
+      monthlyAnual: string;
+      annual: string;
+    };
+    priceIds?: {
+      monthly: string;
+      annual: string;
+    };
+    features: string[];
+  }
+
+  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
+
+  const route = useRouter();
+  const { isAuthenticated } = useContext(AuthContext);
+
+  async function createCheckoutSession(
+    e: FormEvent<HTMLFormElement>,
+    plan: Plan
+  ) {
+    e.preventDefault();
+
+    setIsLoadingCheckout(true);
+
+    if (plan && plan.name !== "Free" && plan.priceIds) {
+      const priceId = isAnnual ? plan.priceIds.annual : plan.priceIds.monthly;
+
+      if (isAuthenticated) {
+        route.push("/documents?choosePlan=true")
+      } else {
+        route.push("/signup?redirectCheckout=true&selectedPrice=" + priceId);
+      }
+    } else {
+      route.push("/signup");
+    }
+  }
 
   return (
     <section className="border-grid border-b" id="planos">
@@ -111,49 +171,65 @@ export function PricingSectionCards() {
 
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:items-center">
             {pricingPlans.map((plan) => (
-              <Card
+              <form
                 key={plan.name}
-                className={`${plan.featured ? "border-primary" : ""}`}
+                onSubmit={(e) => createCheckoutSession(e, plan)}
+                method="POST"
               >
-                <CardHeader className="text-center pb-2">
-                  {plan.featured && (
-                    <Badge className="uppercase rounded-full w-max self-center mb-2">
-                      Mais popular
-                    </Badge>
-                  )}
-                  <CardTitle className="!mb-7 text-3xl">{plan.name}</CardTitle>
-                  <span className="font-bold text-5xl flex items-end self-center">
-                    {isAnnual ? plan.price.monthlyAnual : plan.price.monthly}
-                    <span className="text-xl mt-1">/mês</span>
-                  </span>
-                  {isAnnual && (
-                    <CardDescription className="text-center text-primary w-10/12 mx-auto pb-2">
-                      Você paga {plan.price.annual} por ano
-                    </CardDescription>
-                  )}
-                </CardHeader>
-                <CardDescription className="text-center  w-10/12 mx-auto">
-                  {plan.description}
-                </CardDescription>
-                <CardContent>
-                  <ul className="mt-7 space-y-2.5 text-sm">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex space-x-2">
-                        <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
-                        <span className="text-muted-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    variant={plan.name === "Free" ? "outline" : "default"}
-                  >
-                    Assinar
-                  </Button>
-                </CardFooter>
-              </Card>
+                <Card className={`${plan.featured ? "border-primary" : ""}`}>
+                  <CardHeader className="text-center pb-2">
+                    {plan.featured && (
+                      <Badge className="uppercase rounded-full w-max self-center mb-2">
+                        Mais popular
+                      </Badge>
+                    )}
+                    <CardTitle className="!mb-7 text-3xl">
+                      {plan.name}
+                    </CardTitle>
+                    <span className="font-bold text-5xl flex items-end self-center">
+                      {isAnnual ? plan.price.monthlyAnual : plan.price.monthly}
+                      <span className="text-xl mt-1">/mês</span>
+                    </span>
+                    {isAnnual && (
+                      <CardDescription className="text-center text-primary w-10/12 mx-auto pb-2">
+                        Você paga {plan.price.annual} por ano
+                      </CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardDescription className="text-center  w-10/12 mx-auto">
+                    {plan.description}
+                  </CardDescription>
+                  <CardContent>
+                    <ul className="mt-7 space-y-2.5 text-sm">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex space-x-2">
+                          <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                          <span className="text-muted-foreground">
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      className="w-full"
+                      type="submit"
+                      disabled={isLoadingCheckout}
+                      style={{
+                        opacity: isLoadingCheckout ? 0.6 : 1,
+                      }}
+                      variant={plan.name === "Free" ? "outline" : "default"}
+                    >
+                      {isLoadingCheckout ? (
+                        <Icons.spinner className="animate-spin" />
+                      ) : (
+                        "Assinar"
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              </form>
             ))}
           </div>
         </div>

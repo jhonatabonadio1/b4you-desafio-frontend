@@ -3,7 +3,7 @@
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { setCookie, parseCookies, destroyCookie } from "nookies";
 
-import Router from "next/router";
+import Router, { useRouter } from "next/router";
 import { api } from "@/services/apiClient";
 
 type User = {
@@ -20,6 +20,7 @@ type SignInCredentials = {
     password: string;
   };
   actionOnFinally?: () => void;
+  redirectToCheckoutAction?: () => void;
 };
 
 type SignUpCredentials = {
@@ -31,6 +32,8 @@ type SignUpCredentials = {
     password: string;
   };
   actionOnFinally?: () => void;
+  selectedPrice?: string;
+  redirectCheckout?: boolean;
 };
 
 type AuthContextData = {
@@ -43,6 +46,8 @@ type AuthContextData = {
   signUp({
     userData,
     actionOnFinally,
+    selectedPrice,
+    redirectCheckout,
   }: SignUpCredentials): Promise<string | null>;
   user: User;
   isAuthenticated: boolean;
@@ -74,6 +79,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [isLoadingPage, setIsLoadingPage] = useState(true);
 
   const isAuthenticated = !!user.id;
+
+  const router = useRouter();
 
   useEffect(() => {
     authChannel = new BroadcastChannel("auth");
@@ -112,19 +119,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     fetchCsrfToken();
   }, []);
 
-  function updateUser(user: User){
-    setUser(user)
+  function updateUser(user: User) {
+    setUser(user);
   }
 
   async function signIn({
     userData,
     actionOnFinally,
+    redirectToCheckoutAction,
   }: SignInCredentials): Promise<string | null> {
     try {
       const response = await api.post("/auth/login", userData);
 
       const { token, user } = response.data;
-
+     
       setCookie(undefined, "incorporae.token", token, {
         maxAge: 60 * 60 * 24 * 30, // 30 dias
         path: "/",
@@ -134,7 +142,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       setUser({ ...user, token });
 
-      Router.push("/documents");
+      if (redirectToCheckoutAction) {
+        redirectToCheckoutAction();
+      } else {
+        router.push("/login");
+      }
 
       return null; // Nenhum erro ocorreu
     } catch (error: any) {
@@ -152,13 +164,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function signUp({
     userData,
     actionOnFinally,
+    redirectCheckout,
+    selectedPrice,
   }: SignUpCredentials): Promise<string | null> {
     try {
       await api.post("/auth/register", userData);
 
-      Router.push("/login");
-
-      return null; // Cadastro bem-sucedido
+      if (redirectCheckout && selectedPrice) {
+        Router.push(
+          "/login?redirectCheckout=" +
+            redirectCheckout +
+            "&selectedPrice=" +
+            selectedPrice
+        );
+      } else {
+        Router.push("/login");
+      }
+      return null;
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error || "Erro ao criar conta. Tente novamente.";

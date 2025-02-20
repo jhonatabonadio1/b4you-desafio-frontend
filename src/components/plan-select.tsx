@@ -17,6 +17,7 @@ import { CheckIcon } from "lucide-react";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
 import { useState } from "react";
+import { useRouter } from "next/router";
 
 const pricingPlans = [
   {
@@ -55,7 +56,10 @@ interface Props {
 }
 
 export function PlanSelect({ currentPlan, isOpen, onChange }: Props) {
+
+
   const [isAnnual, setIsAnnual] = useState(true);
+  
 
   return (
     <Dialog onOpenChange={onChange} open={isOpen}>

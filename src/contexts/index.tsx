@@ -1,13 +1,18 @@
-import React, {ReactNode} from 'react'
+import React, { ReactNode } from "react";
 
-import {AuthProvider} from './AuthContext'
+import { AuthProvider } from "./AuthContext";
+import { StripeProvider } from "./StripeContext";
 
 interface AppProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
-function AppProvider({children}: AppProviderProps) {
-  return <AuthProvider>{children}</AuthProvider>
+function AppProvider({ children }: AppProviderProps) {
+  return (
+    <AuthProvider>
+      <StripeProvider>{children}</StripeProvider>
+    </AuthProvider>
+  );
 }
 
-export {AppProvider}
+export { AppProvider };

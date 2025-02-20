@@ -5,6 +5,8 @@ import Head from "next/head";
 import { withSSRGuest } from "@/utils/withSSRGuest";
 
 export default function SignUp() {
+
+
   return (
     <>
       <Head>

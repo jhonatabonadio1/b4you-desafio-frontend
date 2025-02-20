@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AuthContext } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Icons } from "./icons";
+import { useRouter } from "next/router";
 
 // Esquema de validação com Zod
 const signUpSchema = z.object({
@@ -41,6 +42,10 @@ export function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+
+  const route = useRouter();
+  const {selectedPrice, redirectCheckout} = route.query
+
   const {
     register,
     handleSubmit,
@@ -53,7 +58,10 @@ export function SignUpForm() {
     setLoading(true);
     setError(null);
 
-    const errorMessage = await signUp({ userData: data });
+    const selectedPriceValue = selectedPrice as string
+    const redirectCheckoutValue = redirectCheckout === "true"
+
+    const errorMessage = await signUp({ userData: data, selectedPrice: selectedPriceValue, redirectCheckout: redirectCheckoutValue });
 
     if (errorMessage) {
       setError(errorMessage);

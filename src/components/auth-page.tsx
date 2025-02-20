@@ -6,11 +6,11 @@ import Link from "next/link";
 import sophie from "@/assets/sophie.png";
 import { ReactNode } from "react";
 
-interface Props{
-    render: ReactNode
+interface Props {
+  render: ReactNode;
 }
 
-export default function AuthPage({render}: Props) {
+export default function AuthPage({ render }: Props) {
   return (
     <>
       {/* Hero */}
@@ -19,10 +19,12 @@ export default function AuthPage({render}: Props) {
           {/* Grid */}
           <div className="grid items-center md:grid-cols-2 gap-8 lg:gap-12">
             <div className="flex flex-col gap-3">
-            <Link href="/" className="mr-4 flex items-center gap-2 lg:mr-6">
-        <Icons.logo className="h-10 w-10" />
-        <span className="hidden font-bold lg:inline-block text-lg">Incorporaê!</span>
-      </Link>
+              <Link href="/" className="mr-4 flex items-center gap-2 lg:mr-6">
+                <Icons.logo className="h-10 w-10" />
+                <span className="hidden font-bold lg:inline-block text-lg">
+                  Incorporaê!
+                </span>
+              </Link>
 
               {/* Title */}
               <div className="mt-4 md:mb-12 max-w-2xl">
@@ -83,7 +85,7 @@ export default function AuthPage({render}: Props) {
             {/* End Col */}
             <div>
               {/* Form */}
-            
+
               {render}
               {/* End Form */}
             </div>
@@ -92,9 +94,7 @@ export default function AuthPage({render}: Props) {
           {/* End Grid */}
           {/* Clients Section */}
           <div className="mt-6 md:mt-12 py-3 flex items-center text-muted-foreground text-sm gap-x-1.5 after:flex-[1_1_0%] after:border-t after:ms-6 after:border-t-muted-foreground/50">
-            <span className="font-semibold">
-              50,000
-            </span>
+            <span className="font-semibold">50,000</span>
             empresas e profissionais já confiam na Incorporae!
           </div>
           {/* Clients */}
