@@ -36,7 +36,6 @@ import {
   Clipboard,
   Globe,
   Plus,
-  Share,
   Trash,
   Upload,
 } from "lucide-react";
@@ -275,16 +274,20 @@ export default function Documents() {
                                     readOnly
                                   >{`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
                                   <DialogFooter>
-                                    <CopyToClipboard
-                                      text={`http://localhost:3000/doc/${file.id}`}
-                                    >
-                                      <Button
-                                        onClick={() => handleShareLink()}
-                                        variant="outline"
-                                      >
-                                        <Globe />
-                                      </Button>
-                                    </CopyToClipboard>
+                                  <CopyToClipboard
+                                text={`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}
+                                onCopy={() => {
+                                  setCopied(true);
+                                  setTimeout(() => {
+                                    setCopied(false);
+                                  }, 3000);
+                                }}
+                              >
+                                <Button>
+                                  {copied ? <Check /> : <Clipboard />}
+                                  {copied ? "Copiado!" : "Copiar"}
+                                </Button>
+                              </CopyToClipboard>
                                     <DialogClose asChild>
                                       <Button variant="outline">Fechar</Button>
                                     </DialogClose>
@@ -292,12 +295,17 @@ export default function Documents() {
                                 </DialogContent>
                               </Dialog>
 
-                              <Button
-                                onClick={() => handleShareLink()}
-                                variant="outline"
-                              >
-                                <Share />
-                              </Button>
+                              <CopyToClipboard
+                          text={`http://localhost:3000/doc/${file.id}`}
+                          onCopy={handleShareLink}
+                        >
+                          <Button
+                            
+                            variant="outline"
+                          >
+                            <Globe />
+                          </Button>
+                        </CopyToClipboard>
 
                               <Dialog>
                                 <DialogTrigger asChild>
@@ -405,9 +413,10 @@ export default function Documents() {
 
                         <CopyToClipboard
                           text={`http://localhost:3000/doc/${file.id}`}
+                          onCopy={handleShareLink}
                         >
                           <Button
-                            onClick={() => handleShareLink()}
+                            
                             variant="outline"
                           >
                             <Globe />

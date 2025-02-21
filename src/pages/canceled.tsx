@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 export default function Success() {
   const route = useRouter();
 
+  const [show, setShow] = useState(false)
+
   const { session_id } = route.query;
 
   const [isLoading, setIsLoading] = useState(true);
@@ -18,12 +20,13 @@ export default function Success() {
   useEffect(() => {
     async function verifySessionExists() {
       if (!session_id) {
-        return route.push("/documents");
+        return route.push("/documents")
       } else {
         try {
           await api.get("/stripe/session/" + session_id);
+          setShow(true)
         } catch {
-          return route.push("/documents");
+          return route.push("/documents")
         } finally {
           setIsLoading(false);
         }
@@ -43,7 +46,7 @@ export default function Success() {
           <section className="border-grid border-b">
             <div className="container-wrapper">
               <div className="container items-center justify-center flex h-screen flex-col gap-1 py-8 md:py-10 lg:py-12">
-                {isLoading ? (
+                {isLoading && !show ? (
                   <Icons.spinner className="animate-spin" />
                 ) : (
                   <>

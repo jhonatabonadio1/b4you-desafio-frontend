@@ -13,6 +13,8 @@ export default function Success() {
 
   const { session_id } = route.query;
 
+  const [show, setShow] = useState(false)
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +26,7 @@ export default function Success() {
           await api.get("/stripe/session/" + session_id);
         } catch {
           return route.push("/documents");
+          setShow(true)
         } finally {
           setIsLoading(false);
         }
@@ -43,7 +46,7 @@ export default function Success() {
           <section className="border-grid border-b">
             <div className="container-wrapper">
               <div className="container items-center justify-center flex h-screen flex-col gap-1 py-8 md:py-10 lg:py-12">
-                {isLoading ? (
+                {isLoading && show ?(
                   <Icons.spinner className="animate-spin" />
                 ) : (
                   <>

@@ -12,88 +12,55 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 import { CheckIcon } from "lucide-react";
-import React, { FormEvent, useContext, useState } from "react";
+import React, { FormEvent, useContext, useEffect, useState } from "react";
 import { Icons } from "./icons";
 
 import { useRouter } from "next/router";
 import { AuthContext } from "@/contexts/AuthContext";
+import { api } from "@/services/apiClient";
+
+interface Plan {
+  id: string;
+  name: string;
+  description: string | null;
+  order: number | null;
+  monthlyPriceId: string;
+  annualPriceId: string;
+  limit: number;
+  uploadFiles: number;
+  maxSize: number;
+  fileSessions: number;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  monthlyPrice: number;
+  annualPrice: number;
+  featured: boolean;
+}
 
 export function PricingSectionCards() {
   const [isAnnual, setIsAnnual] = useState(true);
+  const [plans, setPlans] = useState([] as Plan[]);
 
-  const pricingPlans = [
-    {
-      name: "Free",
-      description:
-        "Plano gratuito para quem precisa apenas de uma solução básica.",
-      price: { monthly: "R$0", monthlyAnual: "R$0", annual: "R$0" },
-      features: ["1 PDF", "20MB", "Iframe 1 Domínio"],
-    },
-    {
-      name: "Start",
-      description:
-        "Ideal para pequenos negócios que precisam de mais flexibilidade.",
-      price: { monthly: "R$29", monthlyAnual: "R$21", annual: "R$210" },
-      priceIds: {
-        monthly: "price_1QtGnfHzpmX6bB8FBm9spoYi",
-        annual: "price_1QtGnfHzpmX6bB8FC2HxAs4I",
-      },
-      lookup: "prod_RmqUnCHaHgTbcQ",
-      features: ["50 PDFs", "2GB", "10 e-mails privados", "Iframe 3 Domínios"],
-    },
-    {
-      name: "Pro",
-      description:
-        "Para empresas que necessitam de um alto volume de documentos.",
-      price: { monthly: "R$79", monthlyAnual: "R$71", annual: "R$710" },
-      lookup: "prod_RmqVlpNleKwV69",
-      priceIds: {
-        monthly: "price_1QtGoGHzpmX6bB8FqXtMBsp4",
-        annual: "price_1QtGpKHzpmX6bB8Fn9IYecp6",
-      },
-      features: [
-        "200 PDFs",
-        "10GB",
-        "50 e-mails privados",
-        "Iframe 10 Domínios",
-      ],
-      featured: true,
-    },
-    {
-      name: "Business",
-      description: "Solução completa para grandes empresas e alta demanda.",
-      price: { monthly: "R$199", monthlyAnual: "R$179", annual: "R$1799" },
-      lookup: "prod_RmqXRjx7hDRVsB",
-      priceIds: {
-        monthly: "price_1QtGqUHzpmX6bB8FHEGqYVn1",
-        annual: "price_1QtGqUHzpmX6bB8FGNJPTtlT",
-      },
-      features: [
-        "1000 PDFs",
-        "50GB",
-        "Domínio próprio",
-        "Analytics",
-        "Suporte premium",
-        "200 e-mails privados",
-        "Iframe Domínio Ilimitado",
-      ],
-    },
-  ];
+  const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  interface Plan {
-    name: string;
-    description: string;
-    price: {
-      monthly: string;
-      monthlyAnual: string;
-      annual: string;
-    };
-    priceIds?: {
-      monthly: string;
-      annual: string;
-    };
-    features: string[];
-  }
+  useEffect(() => {
+    async function fetchPlans() {
+      try {
+        const response = await api.get("/plans");
+
+        setPlans(response.data);
+      } catch (error) {
+        console.log(error);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPlans();
+  }, []);
 
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
 
@@ -108,17 +75,36 @@ export function PricingSectionCards() {
 
     setIsLoadingCheckout(true);
 
-    if (plan && plan.name !== "Free" && plan.priceIds) {
-      const priceId = isAnnual ? plan.priceIds.annual : plan.priceIds.monthly;
+    if (plan && plan.id !== "DEFAULT") {
+      const priceId = isAnnual ? plan.annualPriceId : plan.monthlyPriceId;
 
       if (isAuthenticated) {
-        route.push("/documents?choosePlan=true")
+        route.push("/documents?choosePlan=true");
       } else {
         route.push("/signup?redirectCheckout=true&selectedPrice=" + priceId);
       }
     } else {
       route.push("/signup");
     }
+  }
+
+  const formatPrice = (number: number) => {
+    const numberCalculated = number / 100 
+
+    return numberCalculated.toLocaleString("pt-BR", {
+       currency: "BRL",
+      style: "currency"
+    })
+  }
+
+  const formatPricePerYear = (number: number) => {
+    const numberCalculated = number / 100 
+    const valuePerYear = numberCalculated / 12
+
+    return valuePerYear.toLocaleString("pt-BR", {
+       currency: "BRL",
+      style: "currency"
+    })
   }
 
   return (
@@ -137,7 +123,7 @@ export function PricingSectionCards() {
           {/* Switch */}
           <div className="flex justify-center items-center">
             <Label htmlFor="payment-schedule" className="me-3">
-              Monthly
+              Mensal
             </Label>
             <Switch
               id="payment-schedule"
@@ -145,9 +131,9 @@ export function PricingSectionCards() {
               onCheckedChange={setIsAnnual}
             />
             <Label htmlFor="payment-schedule" className="relative ms-3">
-              Annual
+              Anual
               <span className="absolute -top-10 start-auto -end-28">
-                <span className="flex items-center">
+                <div className="flex items-center">
                   <svg
                     className="w-14 h-8 -me-6"
                     width={45}
@@ -162,76 +148,107 @@ export function PricingSectionCards() {
                       className="text-muted-foreground"
                     />
                   </svg>
-                  <Badge className="mt-3 uppercase">Save up to 10%</Badge>
-                </span>
+                  <Badge className="inline-block mt-3 uppercase w-auto rounded-full whitespace-nowrap">
+                    Economize até 10%
+                  </Badge>
+                </div>
               </span>
             </Label>
           </div>
           {/* End Switch */}
 
-          <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:items-center">
-            {pricingPlans.map((plan) => (
-              <form
-                key={plan.name}
-                onSubmit={(e) => createCheckoutSession(e, plan)}
-                method="POST"
-              >
-                <Card className={`${plan.featured ? "border-primary" : ""}`}>
-                  <CardHeader className="text-center pb-2">
-                    {plan.featured && (
-                      <Badge className="uppercase rounded-full w-max self-center mb-2">
-                        Mais popular
-                      </Badge>
-                    )}
-                    <CardTitle className="!mb-7 text-3xl">
-                      {plan.name}
-                    </CardTitle>
-                    <span className="font-bold text-5xl flex items-end self-center">
-                      {isAnnual ? plan.price.monthlyAnual : plan.price.monthly}
-                      <span className="text-xl mt-1">/mês</span>
-                    </span>
-                    {isAnnual && (
-                      <CardDescription className="text-center text-primary w-10/12 mx-auto pb-2">
-                        Você paga {plan.price.annual} por ano
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardDescription className="text-center  w-10/12 mx-auto">
-                    {plan.description}
-                  </CardDescription>
-                  <CardContent>
-                    <ul className="mt-7 space-y-2.5 text-sm">
-                      {plan.features.map((feature, index) => (
-                        <li key={index} className="flex space-x-2">
-                          <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
-                          <span className="text-muted-foreground">
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                  <CardFooter>
-                    <Button
-                      className="w-full"
-                      type="submit"
-                      disabled={isLoadingCheckout}
-                      style={{
-                        opacity: isLoadingCheckout ? 0.6 : 1,
-                      }}
-                      variant={plan.name === "Free" ? "outline" : "default"}
+          {isLoading ? (
+            <div className="flex py-12 items-center justify-center mx-auto">
+              <Icons.spinner className="animate-spin" />
+            </div>
+          ) : isError ? (
+            <p className="text-center py-12 text-red-600">
+              Ocorreu um problema ao listar os planos
+            </p>
+          ) : (
+            <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:items-center">
+              {plans.length > 0 &&
+                plans.map((plan) => (
+                  <form
+                    key={plan.id}
+                    onSubmit={(e) => createCheckoutSession(e, plan)}
+                    method="POST"
+                  >
+                    <Card
+                      className={`${plan.featured ? "border-primary" : ""}`}
                     >
-                      {isLoadingCheckout ? (
-                        <Icons.spinner className="animate-spin" />
-                      ) : (
-                        "Assinar"
-                      )}
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </form>
-            ))}
-          </div>
+                      <CardHeader className="text-center pb-2">
+                        {plan.featured && (
+                          <Badge className="uppercase rounded-full w-max self-center mb-2">
+                            Mais popular
+                          </Badge>
+                        )}
+                        <CardTitle className="!mb-7 text-3xl">
+                          {plan.name}
+                        </CardTitle>
+                        <span className="font-bold text-5xl flex items-end self-center">
+                          {isAnnual ? formatPricePerYear(plan.annualPrice) : formatPrice(plan.monthlyPrice)}
+                          <span className="text-xl mt-1">/mês</span>
+                        </span>
+                        {isAnnual && (
+                          <CardDescription className="text-center text-primary w-10/12 mx-auto pb-2">
+                            Você paga {formatPrice(plan.annualPrice)} por ano
+                          </CardDescription>
+                        )}
+                      </CardHeader>
+                      <CardDescription className="text-center  w-10/12 mx-auto">
+                        {plan.description}
+                      </CardDescription>
+                      <CardContent>
+                        <ul className="mt-7 space-y-2.5 text-sm">
+                          <li className="flex space-x-2">
+                            <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                            <span className="text-muted-foreground">
+                              Até {(plan.limit / 1024) > 1000 ? (plan.limit / 1024).toFixed(2).charAt(0) + " GB" : (plan.limit / 1024) + " MB"} de armazenamento
+                            </span>
+                          </li>
+                          <li className="flex space-x-2">
+                            <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                            <span className="text-muted-foreground">
+                              Até {(plan.maxSize / 1024) > 1000 ? (plan.maxSize / 1024).toFixed(2).charAt(0) + " GB" : (plan.maxSize / 1024) + " MB"} por upload
+                            </span>
+                          </li>
+                          <li className="flex space-x-2">
+                            <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                            <span className="text-muted-foreground">
+                              Até {plan.fileSessions} sessões de tracking.
+                            </span>
+                          </li>
+                          <li className="flex space-x-2">
+                            <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                            <span className="text-muted-foreground">
+                              Até {plan.uploadFiles} PDFs
+                            </span>
+                          </li>
+                        </ul>
+                      </CardContent>
+                      <CardFooter>
+                        <Button
+                          className="w-full"
+                          type="submit"
+                          disabled={isLoadingCheckout}
+                          style={{
+                            opacity: isLoadingCheckout ? 0.6 : 1,
+                          }}
+                          variant={plan.name === "Free" ? "outline" : "default"}
+                        >
+                          {isLoadingCheckout ? (
+                            <Icons.spinner className="animate-spin" />
+                          ) : (
+                            "Assinar"
+                          )}
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </form>
+                ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
