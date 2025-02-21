@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -66,8 +67,7 @@ export function RecoverForm() {
     } catch (error: any) {
       toast({
         title: "Erro",
-        description:
-          error.response.data.error ?? "Ocorreu um erro ao redefinir a senha.",
+        description: "Ocorreu um erro ao redefinir a senha.",
         variant: "destructive",
       });
     } finally {

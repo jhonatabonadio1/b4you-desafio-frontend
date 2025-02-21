@@ -235,12 +235,11 @@ export function PricingSectionCards() {
                           style={{
                             opacity: isLoadingCheckout ? 0.6 : 1,
                           }}
-                          variant={plan.name === "Free" ? "outline" : "default"}
                         >
                           {isLoadingCheckout ? (
                             <Icons.spinner className="animate-spin" />
                           ) : (
-                            "Assinar"
+                            plan.id === "DEFAULT" ? "Começar agora" : "Assinar"
                           )}
                         </Button>
                       </CardFooter>

@@ -21,15 +21,13 @@ export function Hero() {
                 <div className="max-w-2xl flex flex-col gap-6 items-center">
                
                   <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    Faça upload do seu PDF
+                  Tenha Insights dos Seus PDFs em Tempo Real
                   </h1>
                 </div>
                 {/* End Title */}
                 <div className="mt-5 max-w-3xl">
                   <p className="text-xl text-muted-foreground">
-                    Arraste e solte seu PDF ou clique na área abaixo para
-                    carregar um arquivo. Após o upload, gere o código de
-                    incorporação automaticamente.
+                  Faça o upload em um servidor seguro e otimizado, acompanhe acessos, interações e descubra como seu público engaja com seus documentos e apresentações. 
                   </p>
                 </div>
                 {/* Buttons */}
