@@ -12,6 +12,7 @@ type User = {
   lastName: string;
   email: string;
   empresa?: string;
+  subscriptionPriceId: string;
 };
 
 type SignInCredentials = {
@@ -30,6 +31,7 @@ type SignUpCredentials = {
     email: string;
     empresa?: string;
     password: string;
+
   };
   actionOnFinally?: () => void;
   selectedPrice?: string;

@@ -1,9 +1,11 @@
 import * as React from "react";
 import {
   ChartColumn,
+  Eye,
   FileText,
   Flame,
   GalleryVerticalEnd,
+  Paintbrush,
 } from "lucide-react";
 
 import { NavMenu } from "@/components/nav-menu";
@@ -45,6 +47,17 @@ const data = {
       url: "/analytics",
       icon: ChartColumn,
     },
+    {
+      name: "Live view",
+      url: "/live",
+      icon: Eye,
+    },
+    {
+      name: "Minha página",
+      url: "/me",
+      icon: Paintbrush,
+    },
+    
   ],
 };
 

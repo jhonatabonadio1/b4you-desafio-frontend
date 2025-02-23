@@ -183,10 +183,10 @@ export function PricingSectionCards() {
                             Mais popular
                           </Badge>
                         )}
-                        <CardTitle className="!mb-7 text-3xl">
+                        <CardTitle className="!mb-2 text-3xl">
                           {plan.name}
                         </CardTitle>
-                        <span className="font-bold text-5xl flex items-end self-center">
+                        <span className="font-bold text-4xl flex items-end self-center">
                           {isAnnual ? formatPricePerYear(plan.annualPrice) : formatPrice(plan.monthlyPrice)}
                           <span className="text-xl mt-1">/mês</span>
                         </span>
@@ -204,13 +204,13 @@ export function PricingSectionCards() {
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {(plan.limit / 1024) > 1000 ? (plan.limit / 1024).toFixed(2).charAt(0) + " GB" : (plan.limit / 1024) + " MB"} de armazenamento
+                              Até {(plan.limit / 1024) > 1000 ? (plan.limit / 1024).toFixed(2).charAt(0) + " GB" : (plan.limit / 1024).toFixed(2) + " MB"} de armazenamento
                             </span>
                           </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {(plan.maxSize / 1024) > 1000 ? (plan.maxSize / 1024).toFixed(2).charAt(0) + " GB" : (plan.maxSize / 1024) + " MB"} por upload
+                              Até {(plan.maxSize / 1024) > 1000 ? (plan.maxSize / 1024).toFixed(2).charAt(0) + " GB" : (plan.maxSize / 1024).toFixed(2) + " MB"} por upload
                             </span>
                           </li>
                           <li className="flex space-x-2">

@@ -2,9 +2,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Users,
-  File,
   Eye,
   Clock,
+  Globe,
 } from "lucide-react";
 
 interface TrackingNumbersProps{
@@ -12,7 +12,7 @@ interface TrackingNumbersProps{
   totalViews: number,
   totalInteractionTime: number,
   averageTimePerPage: number,
-  mostInteractedPage: number | null
+  sessions: number
   }
 }
 
@@ -20,7 +20,26 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
   return (
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        {/* Card */}
+         <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <Badge variant="outline" className="text-primary">
+                  <Globe className="mr-1 h-3 w-3" />
+                  Sessões iniciadas
+                </Badge>
+              
+              </div>
+              <div>
+                <h3 className="text-2xl font-semibold">{data.sessions}</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Sessões reais
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col gap-4">
@@ -72,26 +91,6 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
           </CardContent>
         </Card>
 
-        {/* Card */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <Badge variant="outline" className="text-primary">
-                  <File className="mr-1 h-3 w-3" />
-                  Página destaque
-                </Badge>
-              
-              </div>
-              <div>
-                <h3 className="text-2xl font-semibold">{data.mostInteractedPage ? "Pg. " + data.mostInteractedPage :  "Sem dados"}</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Página em destaque
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Card */}
         <Card>

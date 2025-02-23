@@ -1,3 +1,4 @@
+ 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeSwitcher } from "@/components/mode-switcher";
@@ -34,7 +35,7 @@ import {
 import { Button } from "@/components/ui/button";
 import NumbersWithBadges from "@/components/analytics/numbers-with-badges";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { api } from "@/services/apiClient";
 
 import {
@@ -46,6 +47,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useFiles } from "@/services/hooks/files";
+import { Badge } from "@/components/ui/badge";
+import { RadioTower, User } from "lucide-react";
+import { io, Socket } from "socket.io-client";
+import { AuthContext } from "@/contexts/AuthContext";
 
 const FormSchema = z.object({
   docId: z.string(),
@@ -63,7 +68,7 @@ interface TrackingNumbersProps {
   totalViews: number;
   totalInteractionTime: number;
   averageTimePerPage: number;
-  mostInteractedPage: number | null;
+  sessions: number;
 }
 
 interface Pages {
@@ -80,6 +85,8 @@ export default function Analytics() {
   const [isLoading, setIsLoading] = useState(false);
   const [trackingNumbers, setTrackingNumbers] =
     useState<TrackingNumbersProps | null>(null);
+    
+  const {user, } = useContext(AuthContext)
 
   const [pages, setPages] = useState<Pages[] | null>(null);
 
@@ -101,6 +108,48 @@ export default function Analytics() {
     }
   }, [data]);
 
+
+  const socketRef = useRef<Socket | null>(null); // Ref para armazenar a conexão WebSocket
+  
+  function liveViewInitializer(docId: string) {
+    if (!socketRef.current) {
+      socketRef.current = io("http://127.0.0.1:3333", {
+        transports: ["websocket"],
+      });
+  
+      socketRef.current.on("connect", () => {
+        console.log("✅ WebSocket conectado!", socketRef.current?.id);
+  
+        // O Analytics (dono) entra na "docOwner:docId"
+        socketRef.current?.emit("joinDocumentOwnerRoom", {
+          documentId: docId,
+          token: api.defaults.headers.Authorization,
+        });
+      });
+  
+      socketRef.current.on("disconnect", () => {
+        console.log("❌ WebSocket desconectado.");
+      });
+  
+      // Agora escuta atualizações
+      socketRef.current.on("activeUsersCount", (data) => {
+        // data = { documentId, count }
+        setActiveUsers(() => {
+          console.log(`🔄 Atualizando usuários ativos: ${data.count}`);
+          return data.count;
+        });
+      });
+    } else {
+      // Se já existia
+      socketRef.current.emit("joinDocumentOwnerRoom", {
+        documentId: docId,
+        token: api.defaults.headers.Authorization,
+      });
+    }
+  }
+  
+  
+
   async function fetchPdf(
     docId: string,
     datas: { dataInicio: string; dataFim: string }
@@ -111,12 +160,15 @@ export default function Analytics() {
         `/file/${docId}?dataInicio=${datas.dataInicio}&dataFim=${datas.dataFim}`
       );
       setPdfUrl(data.url);
+
+      liveViewInitializer(docId);
     } catch (error) {
       console.error("Erro ao buscar documento:", error);
     } finally {
       setIsLoading(false);
     }
   }
+
   async function fetchDocTrackingNumbers(
     docId: string,
     datas: { dataInicio: string; dataFim: string }
@@ -132,6 +184,7 @@ export default function Analytics() {
       setIsLoading(false);
     }
   }
+
   async function fetchTrackingPages(
     docId: string,
     datas: { dataInicio: string; dataFim: string }
@@ -174,6 +227,8 @@ export default function Analytics() {
     fetchDocTrackingNumbers(docId, datas);
     fetchTrackingPages(docId, datas);
   };
+
+  const [activeUsers, setActiveUsers] = useState(0);
 
   return (
     <>
@@ -219,69 +274,86 @@ export default function Analytics() {
             </header>
 
             <div className="flex flex-col gap-4 relative h-full w-full">
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="flex flex-col lg:flex-row items-end gap-4 w-full lg:w-auto self-start"
-                >
-                  <div className="flex flex-col gap-4 w-full lg:w-auto">
-                    <FormField
-                      control={form.control}
-                      name="calendar"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel className="text-md font-normal">
-                            Documento
-                          </FormLabel>
-                          <FormControl className="w-full">
-                            {!loadingDocs && (
-                              <DocumentsCombobox
-                                data={documentsPickerData}
-                                value={form.watch("docId")}
-                                onChange={(docId) =>
-                                  form.setValue("docId", docId)
-                                }
-                              />
-                            )}
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-4 w-full lg:w-auto">
-                    <FormField
-                      control={form.control}
-                      name="calendar"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-md font-normal">
-                            Período
-                          </FormLabel>
-                          <FormControl className="w-full">
-                            <CalendarDatePicker
-                              date={field.value}
-                              onDateSelect={({ from, to }) => {
-                                form.setValue("calendar", { from, to });
-                              }}
-                              variant="outline"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <Button
-                    variant="default"
-                    type="submit"
-                    className="w-full lg:w-auto"
-                    disabled={!form.watch("docId")}
+              <div className="flex flex-row items-center gap-4 justify-between">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="flex flex-col lg:flex-row items-end gap-4 w-full lg:w-auto self-start"
                   >
-                    Analisar
-                  </Button>
-                </form>
-              </Form>
+                    <div className="flex flex-col gap-4 w-full lg:w-auto">
+                      <FormField
+                        control={form.control}
+                        name="calendar"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel className="text-md font-normal">
+                              Documento
+                            </FormLabel>
+                            <FormControl className="w-full">
+                              {!loadingDocs && (
+                                <DocumentsCombobox
+                                  data={documentsPickerData}
+                                  value={form.watch("docId")}
+                                  onChange={(docId) =>
+                                    form.setValue("docId", docId)
+                                  }
+                                />
+                              )}
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-4 w-full lg:w-auto">
+                      <FormField
+                        control={form.control}
+                        name="calendar"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-md font-normal">
+                              Período
+                            </FormLabel>
+                            <FormControl className="w-full">
+                              <CalendarDatePicker
+                                date={field.value}
+                                onDateSelect={({ from, to }) => {
+                                  form.setValue("calendar", { from, to });
+                                }}
+                                variant="outline"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      variant="default"
+                      type="submit"
+                      className="w-full lg:w-auto"
+                      disabled={!form.watch("docId")}
+                    >
+                      Analisar
+                    </Button>
+                  </form>
+                </Form>
+
+                {pdfUrl && (
+                  <div className="p-4 border border-red-600 flex rounded-lg flex-col gap-2">
+                    <Badge
+                      variant="outline"
+                      className="text-red-600 border-red-600 self-center"
+                    >
+                      <RadioTower className="mr-1 h-3 w-3" /> Ao vivo
+                    </Badge>
+                    <div className="flex flex-row items-center gap-0">
+                      <h3 className="text-xl font-semibold">{activeUsers} </h3>
+                      <User className=" h-5 w-5" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {trackingNumbers && <NumbersWithBadges data={trackingNumbers} />}
 

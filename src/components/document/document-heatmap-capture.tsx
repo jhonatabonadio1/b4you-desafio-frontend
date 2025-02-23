@@ -4,6 +4,8 @@ import { throttle } from "lodash";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { api } from "@/services/apiClient";
+import { io, Socket} from "socket.io-client";
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -46,8 +48,6 @@ export function DocumentHeatmapCapture({
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [scale, setScale] = useState(1);
-  const [startTime, setStartTime] = useState<number | null>(null);
-  const [ws, setWs] = useState<WebSocket | null>(null);
 
   useEffect(() => {
     if (containerRef.current && pages.length > 0) {
@@ -68,12 +68,48 @@ export function DocumentHeatmapCapture({
     setZoom((prev) => (prev > max ? prev / 1.2 : prev));
   }
 
-  const [alreadyCreatedWebsocket, setAlreadyCreatedWebsocket] = useState(false);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const pageRef = useRef<HTMLCanvasElement>(null);
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const socketRef = useRef<Socket | null>(null); // Ref para armazenar a conexão WebSocket
+
+  useEffect(() => {
+   
+
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
+
+  function openWebSocket(sessionId: string) {
+    if (!socketRef.current) {
+      // Criar a conexão apenas UMA VEZ
+      socketRef.current = io("http://127.0.0.1:3333", {
+        transports: ["websocket"],
+      });
+
+      socketRef.current.on("connect", () => {
+        console.log("✅ WebSocket conectado!", socketRef.current?.id);
+      });
+
+      socketRef.current.on("disconnect", () => {
+        console.log("❌ WebSocket desconectado.");
+      });
+
+      socketRef.current.emit("joinDocumentRoom", {
+        documentId: docId,
+        sessionId: sessionId,
+        fingerprint: navigator.userAgent,
+      });
+
+      socketRef.current.emit("pageChange", { pageNumber });
+    }
+  }
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -88,15 +124,21 @@ export function DocumentHeatmapCapture({
     if (!isFullscreen) {
       sessionStorage.removeItem("heatmaps");
     }
-    createSession();
   }, []);
 
   async function createSession() {
     try {
       const response = await api.post("/sessions", { docId });
       setSessionId(response.data.sessionId);
+      openWebSocket(response.data.sessionId);
     } catch (error) {
       console.log("[SESSION] Erro ao criar sessão:", error);
+    }
+  }
+
+  async function sendMessage() {
+    if(socketRef.current){
+      socketRef.current.emit("pageChange", { pageNumber });
     }
   }
 
@@ -115,12 +157,7 @@ export function DocumentHeatmapCapture({
   async function onDocumentLoadSuccess(pdf: any) {
     setNumPages(pdf.numPages);
     setPageNumber(1);
-
-    if (pdf.numPages === 1) {
-      if (!alreadyCreatedWebsocket) {
-        openWebSocket();
-      }
-    }
+    createSession();
 
     const pageWithDimensions: PagesProps[] = [];
 
@@ -149,6 +186,7 @@ export function DocumentHeatmapCapture({
 
   useEffect(() => {
     setIsPageRendered(false);
+    sendMessage();
   }, [pageNumber]);
 
   function prevPage() {
@@ -160,6 +198,8 @@ export function DocumentHeatmapCapture({
   }
 
   useEffect(() => {
+    if (!isPageRendered) return;
+
     const targetElement = containerRef.current;
     if (!targetElement || pages.length === 0 || !pageRef.current) return;
 
@@ -217,7 +257,16 @@ export function DocumentHeatmapCapture({
       targetElement.removeEventListener("mousemove", mouseMoveListener);
       targetElement.removeEventListener("touchmove", touchMoveListener);
     };
-  }, [isFullscreen, zoom, pageNumber, pages, scale, containerRef, pageRef]);
+  }, [
+    isFullscreen,
+    zoom,
+    pageNumber,
+    pages,
+    scale,
+    containerRef,
+    pageRef,
+    isPageRendered,
+  ]);
 
   function processMovement(x: number, y: number) {
     const currentPage = pages.find((p) => p.page === pageNumber);
@@ -275,7 +324,7 @@ export function DocumentHeatmapCapture({
 
     if (isPageRendered) {
       console.log("Intervalo iniciado");
-      interval = setInterval(enviaLote, 60000);
+      interval = setInterval(enviaLote, 15000);
     }
     return () => clearInterval(interval);
   }, [isPageRendered]);
@@ -296,84 +345,6 @@ export function DocumentHeatmapCapture({
       );
     }
   }
-
-  //** TRAQUEAMENTO + TEMPO DE INTERAÇÃO */
-  useEffect(() => {
-    if (isPageRendered) {
-      setStartTime(Date.now());
-    }
-  }, [pageNumber, isPageRendered]);
-
-  async function handleSendPageView() {
-    if (!startTime || !sessionId) return;
-
-    const timeSpent = Date.now() - startTime;
-
-    try {
-      const data = { pageNumber, interactionTime: timeSpent / 1000 };
-
-      await api.post("/tracking/" + sessionId + "/pageview", data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  useEffect(() => {
-    if (pageNumber > 1) {
-      handleSendPageView();
-    }
-  }, [pageNumber]);
-
-  function openWebSocket() {
-    if (!sessionId) return;
-
-    const socket = new WebSocket("ws://localhost:8080");
-
-    socket.onopen = () => {
-      setAlreadyCreatedWebsocket(true);
-      console.log("✅ WebSocket conectado!");
-      setStartTime(Date.now());
-
-      // Enviar ID da sessão e docId para o backend
-      socket.send(
-        JSON.stringify({
-          sessionId,
-          docId,
-          fingerprint: navigator.userAgent,
-          pageNumber: 1,
-        })
-      );
-    };
-
-    setWs(socket);
-  }
-
-  useEffect(() => {
-    if (!numPages) return;
-    if (numPages > 1) {
-      if (pageNumber === numPages) {
-        if (!alreadyCreatedWebsocket) {
-          openWebSocket();
-        }
-      } else if (pageNumber === numPages - 1 && ws) {
-        closeWebSocket();
-      }
-    }
-  }, [pageNumber, numPages]);
-
-  function closeWebSocket() {
-    if (ws) {
-      console.log("❌ WebSocket fechado!");
-      ws.close();
-      setWs(null);
-    }
-  }
-
-  useEffect(() => {
-    return () => {
-      if (ws) ws.close();
-    };
-  }, [ws]);
 
   const { setTheme, resolvedTheme } = useTheme();
   const { setMetaColor } = useMetaColor();
