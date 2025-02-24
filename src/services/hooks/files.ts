@@ -35,7 +35,6 @@ export function useUploadFile() {
     {
       onSuccess: () => {
         queryClient.invalidateQueries("files");
-        queryClient.invalidateQueries("storage");
       },
     }
   );

@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeSwitcher } from "@/components/mode-switcher";
@@ -30,6 +30,7 @@ import Storage from "@/components/storage";
 import { toast } from "@/hooks/use-toast";
 import { UploadFileCard } from "@/components/files/file-card";
 import { api } from "@/services/apiClient";
+import { queryClient } from "@/services/queryClient";
 
 // Importando o toast para exibir mensagens (necessário instalar, por exemplo, react-hot-toast)
 
@@ -56,13 +57,14 @@ export default function Documents() {
     async (acceptedFiles: File[]) => {
       console.log(acceptedFiles);
       const newUploadingFiles = [] as FileProps[];
+      const newJobsIds = [] as string[]
       for (const file of acceptedFiles) {
         try {
           const { title, jobId, id } = await uploadFile.mutateAsync(file);
 
           newUploadingFiles.push({ id, jobId, title, status: "loading" });
 
-          setJobsIds((prev) => [...prev, jobId]);
+          newJobsIds.push(jobId);
         } catch ({ response }: any) {
           setUploadingFiles((prev) =>
             prev.filter((f) => f.title !== file.name)
@@ -81,6 +83,7 @@ export default function Documents() {
         }
       }
 
+      setJobsIds((prev) => [...prev, ...newJobsIds])
       setUploadingFiles(newUploadingFiles);
     },
     [uploadFile]
@@ -88,44 +91,45 @@ export default function Documents() {
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
+  
     async function checkUploadFileStatus() {
       try {
-        const { data } = await api.post("/files/status", {
-          jobIds,
-        });
-
-        const newUploadingFiles = data.map((item: any) => {
-          const buscaUploadingFileComJobId = uploadingFiles.find(
-            (file) => file.id === item.result.id
-          );
-          if (buscaUploadingFileComJobId) {
-            if (item.state === "completed") {
-              const removeJobIds = jobIds.filter((job) => job !== item.id);
-              setJobsIds(removeJobIds);
-
-              return {
-                ...item.result,
-                status: item.state,
-              };
+        const { data } = await api.post("/files/status", { jobIds });
+  
+        const updatedUploadingFiles = uploadingFiles.map((file) => {
+          const foundItem = data.find((item: any) => item.id === file.jobId);
+          if (foundItem) {
+            if (foundItem.state === "completed") {
+              return { ...foundItem.result, status: "completed" };
             }
           }
+          return file;
         });
-
-        setUploadingFiles(newUploadingFiles);
+  
+        const completedJobs = data
+          .filter((item: any) => item.state === "completed")
+          .map((item: any) => item.id);
+  
+        setUploadingFiles(updatedUploadingFiles);
+        setJobsIds((prev) => prev.filter((jobId) => !completedJobs.includes(jobId)));
+  
+        queryClient.invalidateQueries("storage");
       } catch (error) {
         console.log(error);
       }
     }
+  
     if (jobIds.length >= 1) {
       interval = setInterval(() => {
         checkUploadFileStatus();
       }, 5000);
     }
-
+  
     return () => {
       clearInterval(interval);
     };
-  }, [jobIds]);
+  }, [jobIds, uploadingFiles]);
+  
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -143,17 +147,16 @@ export default function Documents() {
   function onDeleteFile(id: string) {
     setUploadingFiles((prev) => prev.filter((item) => item.id !== id));
   }
-
+  
   const filteredItems = () => {
-    if (!isLoading) {
-      let filteredData = data;
-      for (const upload of uploadingFiles) {
-        filteredData = data.filter((item: any) => item.id !== upload.id);
-      }
-
-      return filteredData;
+    if (!isLoading && data) {
+      return data.filter(
+        (item: any) => !uploadingFiles.some((upload) => upload.id === item.id)
+      );
     }
+    return [];
   };
+  
 
   return (
     <>
