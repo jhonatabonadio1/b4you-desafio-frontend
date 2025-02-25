@@ -41,7 +41,7 @@ interface FileProps {
   iframe?: string;
   jobId: string;
   createdAt?: string;
-  status: "loading" | "completed" | "error";
+  status: "loading" | "completed" | "failed";
 }
 
 export default function Documents() {
@@ -147,7 +147,7 @@ export default function Documents() {
   function onDeleteFile(id: string) {
     setUploadingFiles((prev) => prev.filter((item) => item.id !== id));
   }
-  
+
   const filteredItems = () => {
     if (!isLoading && data) {
       return data.filter(

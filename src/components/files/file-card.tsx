@@ -28,7 +28,7 @@ interface Props {
     sizeInBytes?: number;
     iframe?: string;
     createdAt?: string;
-    status: "loading" | "completed" | "error";
+    status: "loading" | "completed" | "failed";
   };
   onDelete: (name: string) => void;
 }
@@ -66,13 +66,13 @@ export function UploadFileCard({ file, onDelete }: Props) {
   }
 
   return (
-    <Card className={`${file.status === "error" && "border-red-600"} flex flex-col justify-between relative aspect-video`}>
+    <Card className={`${file.status === "failed" && "border-red-600"} flex flex-col justify-between relative aspect-video`}>
       {file.status === "loading" ? (
         <div className="flex w-full h-full items-center justify-center absolute top-0 left-0">
           <Icons.spinner className="animate-spin" />
         </div>
       ) : 
-        file.status === "error" ? (
+        file.status === "failed" ? (
           <CardHeader>
             <div className="flex flex-col gap-1">
               <div className="flex flex-row items-center gap-2">
