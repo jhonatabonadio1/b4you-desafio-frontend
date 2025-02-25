@@ -322,29 +322,31 @@ export function DocumentHeatmapCapture({
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isPageRendered) {
+    if (sessionId) {
       console.log("Intervalo iniciado");
       interval = setInterval(enviaLote, 15000);
     }
     return () => clearInterval(interval);
-  }, [isPageRendered]);
+  }, [sessionId]);
 
   async function enviaLote() {
     const heatmaps = JSON.parse(sessionStorage.getItem("heatmaps") || "[]");
-    if (heatmaps.length === 0 || !sessionId) {
+   
+    if (heatmaps.length === 0) {
+
       return;
     }
-
+  
     try {
+
       await api.post("/heatmaps/lote", { docId, sessionId, lote: heatmaps });
+     
       sessionStorage.removeItem("heatmaps");
     } catch (error: any) {
-      console.log(
-        "[HEATMAP] Erro ao enviar lote:",
-        error.response?.data?.message || "Erro desconhecido"
-      );
+      console.error("[HEATMAP] Erro ao enviar lote:", error);
     }
   }
+  
 
   const { setTheme, resolvedTheme } = useTheme();
   const { setMetaColor } = useMetaColor();
