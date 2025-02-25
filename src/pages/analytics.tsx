@@ -113,7 +113,7 @@ export default function Analytics() {
   
   function liveViewInitializer(docId: string) {
     if (!socketRef.current) {
-      socketRef.current = io("https://incorporae-f47969ed39cb.herokuapp.com", {
+      socketRef.current = io("https://api.incorporae.com.br/api", {
         transports: ["websocket"],
       });
   
