@@ -113,10 +113,10 @@ export function UploadFileCard({ file, onDelete }: Props) {
                       rows={4}
                       className="text-muted-foreground"
                       readOnly
-                    >{`<iframe src="http://incorporae.com.br/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
+                    >{`<iframe src="https://incorporae.com.br/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
                     <DialogFooter>
                       <CopyToClipboard
-                        text={`<iframe src="http://incorporae.com.br/file_view/${file.id}" width="1280" height="720"></iframe>`}
+                        text={`<iframe src="https://incorporae.com.br/file_view/${file.id}" width="1280" height="720"></iframe>`}
                         onCopy={() => {
                           setCopied(true);
                           setTimeout(() => {
