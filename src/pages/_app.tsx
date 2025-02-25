@@ -24,7 +24,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
 
           <GoogleTagManager gtmId="GTM-59Z4JF2K" />
-          <CookieConsent cookieName="grow" expires={150} location="bottom" buttonText="Eu entendo" style={{ background: "var(--secondary)" }} buttonStyle={{ background: "var(--primary)", color: "#FFF", fontSize: "18px" }}>Este site usa cookies para melhorar a experiência do usuário.</CookieConsent>
+          <CookieConsent cookieName="incorporae" expires={150} location="bottom" buttonText="Eu entendo"  
+  >Este site usa cookies para melhorar a experiência do usuário.</CookieConsent>
         </AppProvider>
       </ThemeProvider>
     </QueryClientProvider>
