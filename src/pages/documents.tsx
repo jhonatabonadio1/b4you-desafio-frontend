@@ -22,14 +22,14 @@ import {
 import { withSSRAuth } from "@/utils/withSSRAuth";
 import { Plus, Upload } from "lucide-react";
 import Head from "next/head";
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { Icons } from "@/components/icons";
 import { useFiles, useUploadFile } from "@/services/hooks/files";
 import Storage from "@/components/storage";
 import { toast } from "@/hooks/use-toast";
 import { UploadFileCard } from "@/components/files/file-card";
-import { api } from "@/services/apiClient";
+
 import { queryClient } from "@/services/queryClient";
 
 // Importando o toast para exibir mensagens (necessário instalar, por exemplo, react-hot-toast)
@@ -39,7 +39,6 @@ interface FileProps {
   title: string;
   sizeInBytes?: number;
   iframe?: string;
-  jobId: string;
   createdAt?: string;
   status: "loading" | "completed" | "failed";
 }
@@ -49,86 +48,55 @@ export default function Documents() {
 
   const { data, isLoading } = useFiles(search); // ARQUVIOS DO SERVIDOR
   const [uploadingFiles, setUploadingFiles] = useState<FileProps[]>([]); // ARQUIVOS LOCAL
-  const [jobIds, setJobsIds] = useState([] as string[]); // JOBS IDS
-
+ 
   const uploadFile = useUploadFile();
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
-      console.log(acceptedFiles);
-      const newUploadingFiles = [] as FileProps[];
-      const newJobsIds = [] as string[]
       for (const file of acceptedFiles) {
+        // Adiciona como "loading" localmente
+        setUploadingFiles(prev => [
+          ...prev,
+          { title: file.name, status: 'loading' }
+        ])
+
         try {
-          const { title, jobId, id } = await uploadFile.mutateAsync(file);
-
-          newUploadingFiles.push({ id, jobId, title, status: "loading" });
-
-          newJobsIds.push(jobId);
-        } catch ({ response }: any) {
-          setUploadingFiles((prev) =>
+          // Faz upload usando presign
+          const response = await uploadFile.mutateAsync(file)
+          // remove o "loading" entry e adiciona a resposta
+          setUploadingFiles(prev =>
             prev.filter((f) => f.title !== file.name)
-          );
+          )
+          setUploadingFiles(prev => [
+            ...prev,
+            { ...response, status: 'completed' } // ex.: {id, title, sizeInBytes, createdAt}
+          ])
 
+          // Opcional: recarregar a lista principal
+          queryClient.invalidateQueries('files')
+        } catch (error: any) {
+          console.error(error)
           toast({
             variant: "destructive",
             title: "Opa! Algo deu errado.",
-            description:
-              response.data.error ?? "Ocorreu um problema com sua solicitação.",
-          });
-        } finally {
-          if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-          }
+            description: error.response?.data?.error ?? "Erro no upload.",
+          })
+
+          // Marca como "failed"
+          setUploadingFiles(prev =>
+            prev.map(f => {
+              if (f.title === file.name) {
+                return { ...f, status: 'failed' }
+              }
+              return f
+            })
+          )
         }
       }
-
-      setJobsIds((prev) => [...prev, ...newJobsIds])
-      setUploadingFiles(newUploadingFiles);
     },
     [uploadFile]
-  );
+  )
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-  
-    async function checkUploadFileStatus() {
-      try {
-        const { data } = await api.post("/files/status", { jobIds });
-  
-        const updatedUploadingFiles = uploadingFiles.map((file) => {
-          const foundItem = data.find((item: any) => item.id === file.jobId);
-          if (foundItem) {
-            if (foundItem.state === "completed") {
-              return { ...foundItem.result, status: "completed" };
-            }
-          }
-          return file;
-        });
-  
-        const completedJobs = data
-          .filter((item: any) => item.state === "completed")
-          .map((item: any) => item.id);
-  
-        setUploadingFiles(updatedUploadingFiles);
-        setJobsIds((prev) => prev.filter((jobId) => !completedJobs.includes(jobId)));
-  
-        queryClient.invalidateQueries("storage");
-      } catch (error) {
-        console.log(error);
-      }
-    }
-  
-    if (jobIds.length >= 1) {
-      interval = setInterval(() => {
-        checkUploadFileStatus();
-      }, 5000);
-    }
-  
-    return () => {
-      clearInterval(interval);
-    };
-  }, [jobIds, uploadingFiles]);
   
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

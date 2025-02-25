@@ -1,7 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import { api } from "@/services/apiClient";
+import axios from "axios";
+
 
 export function useFiles(search?: string) {
+
   return useQuery(["files", search], async () => {
     // Envia o termo de busca como query param
     let response;
@@ -21,23 +24,47 @@ export function useFiles(search?: string) {
 export function useUploadFile() {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    async (file: File) => {
-      const formData = new FormData();
-      formData.append("file", file);
 
-      const response = await api.post("/file", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      // Retorna { title, sizeInBytes, ... }
-      return response.data;
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("files");
+  return useMutation(async (file: File) => {
+    // 1) Pedir presigned URL
+    const fileName = file.name;
+    const fileType = file.type;
+    const sizeInBytes = file.size;
+    const userId = "123"; // Exemplo fixo; substitua com ID real
+
+    const presignRes = await api.post("/file/presign", {
+      fileName,
+      fileType,
+      userId,
+      sizeInBytes,
+    });
+
+    const { uploadUrl, key } = presignRes.data;
+
+    // 2) Upload direto ao S3
+    // Importante: usar PUT com cabeçalho "Content-Type"
+    await axios.put(uploadUrl, file, {
+      headers: {
+       'Content-Type': 'application/pdf'
       },
-    }
-  );
+    });
+
+
+    // 3) Notificar backend que o upload foi concluído
+    const completeRes = await api.post("/file/complete", {
+      key,
+      originalName: fileName,
+      sizeInBytes,
+      userId,
+    });
+
+    // Retorna algo como { id, title, sizeInBytes, createdAt, status: 'completed' }
+    return completeRes.data;
+  },   {
+    onSuccess: () => {
+      queryClient.invalidateQueries("storage");
+    },
+  });
 }
 
 export function useDeleteFile() {
