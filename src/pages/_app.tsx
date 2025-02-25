@@ -5,6 +5,8 @@ import { queryClient } from "@/services/queryClient";
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { QueryClientProvider } from "react-query";
+import CookieConsent from "react-cookie-consent";
+import { GoogleTagManager } from '@next/third-parties/google'
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -19,6 +21,10 @@ export default function App({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
 
           <Toaster />
+
+
+          <GoogleTagManager gtmId="GTM-59Z4JF2K" />
+          <CookieConsent cookieName="grow" expires={150} location="bottom" buttonText="Eu entendo" style={{ background: "var(--secondary)" }} buttonStyle={{ background: "var(--primary)", color: "#FFF", fontSize: "18px" }}>Este site usa cookies para melhorar a experiência do usuário.</CookieConsent>
         </AppProvider>
       </ThemeProvider>
     </QueryClientProvider>
