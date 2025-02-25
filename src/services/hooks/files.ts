@@ -58,12 +58,8 @@ export function useUploadFile() {
       userId,
     });
 
-    // Retorna algo como { id, title, sizeInBytes, createdAt, status: 'completed' }
+    queryClient.invalidateQueries("storage");
     return completeRes.data;
-  },   {
-    onSuccess: () => {
-      queryClient.invalidateQueries("storage");
-    },
   });
 }
 
