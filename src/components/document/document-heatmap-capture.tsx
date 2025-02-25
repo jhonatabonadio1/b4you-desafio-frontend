@@ -89,7 +89,7 @@ export function DocumentHeatmapCapture({
   function openWebSocket(sessionId: string) {
     if (!socketRef.current) {
       // Criar a conexão apenas UMA VEZ
-      socketRef.current = io("https://api.incorporae.com.br", {
+      socketRef.current = io("https://incorporae-f47969ed39cb.herokuapp.com", {
         transports: ["websocket"],
       });
 
