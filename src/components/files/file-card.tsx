@@ -87,8 +87,8 @@ export function UploadFileCard({ file, onDelete }: Props) {
           <CardHeader>
             <div className="flex flex-col gap-1">
               <div className="flex flex-row items-center gap-2">
-                <span className="truncate max-w-full">{file.title}</span>
-                <Badge>{(file.sizeInBytes! / 1024 / 1024).toFixed(2) + "MB"}</Badge>
+                <span className="truncate flex-1">{file.title}</span>
+                <Badge className="w-max">{(file.sizeInBytes! / 1024) > 1000 ? (file.sizeInBytes! / 1024 / 1024).toFixed(2) + " GB" :  (file.sizeInBytes! / 1024 / 1024).toFixed(2) + " MB"}</Badge>
               </div>
               <small className="text-muted-foreground">{formatDate(file.createdAt!)}</small>
             </div>

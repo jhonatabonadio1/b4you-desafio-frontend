@@ -30,13 +30,13 @@ export default function Storage() {
               <span className="self-start text-xs">
                 Utilizado:{" "}
                 <span className="font-bold">
-                  {isLoading ? "..." : (totalUsed / 1024) > 1000 ? (totalUsed / 1024).toFixed(2).charAt(0) + " GB" :  (totalUsed / 1024).toFixed(2) + " MB"}
+                  {isLoading ? "..." : (totalUsed / 1024) > 1000 ? (totalUsed / 1024).toFixed(2).charAt(0) + " GB" :  (totalUsed / 100).toFixed(2) + " MB"}
                 </span>
               </span>
               <span className="self-end text-xs">
                 Max.{" "}
                 <span className="font-bold">
-                {(totalLimit / 1024) > 1000 ? (totalLimit / 1024).toFixed(2).charAt(0) + " GB" : (totalUsed / 1024).toFixed(2) + " MB"}
+                {(totalLimit / 1024) > 1000 ? (totalLimit / 1024).toFixed(2).charAt(0) + " GB" : (totalLimit / 1024).toFixed(2) + " MB"}
                 </span>
               </span>
             </div>
