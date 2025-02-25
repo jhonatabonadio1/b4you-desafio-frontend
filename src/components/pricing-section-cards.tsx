@@ -204,25 +204,25 @@ export function PricingSectionCards() {
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {(plan.limit / 1024) > 1000 ? (plan.limit / 1024).toFixed(2).charAt(0) + " GB" : (plan.limit / 1024).toFixed(2) + " MB"} de armazenamento
+                              Até {(plan.limit / 1024) > 1000 ? (plan.limit / 1024).toFixed(2).charAt(0) + " GB" : (plan.limit / 1024) + " MB"} de armazenamento
                             </span>
                           </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {(plan.maxSize / 1024) > 1000 ? (plan.maxSize / 1024).toFixed(2).charAt(0) + " GB" : (plan.maxSize / 1024).toFixed(2) + " MB"} por upload
+                              Até {(plan.maxSize / 1024) > 1000 ? (plan.maxSize / 1024).toFixed(2).charAt(0) + " GB" : (plan.maxSize / 1024) + " MB"} por upload
                             </span>
                           </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {plan.fileSessions} sessões de tracking.
+                              Até {plan.fileSessions} sessões de tracking por PDF.
                             </span>
                           </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {plan.uploadFiles} PDFs
+                              Upload de até {plan.uploadFiles} PDFs
                             </span>
                           </li>
                         </ul>

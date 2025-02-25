@@ -7,7 +7,7 @@ export function setupAPIClient(ctx = undefined) {
   const {'incorporae.token': token} = cookies
 
   const api = axios.create({
-    baseURL:   `https://api.incorporae.com.br/api`,
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
     headers: {
       Authorization: `${token ? 'Bearer ' + token : ''}`,
     },
