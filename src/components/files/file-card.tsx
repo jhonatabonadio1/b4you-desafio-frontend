@@ -19,6 +19,7 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { Check, Clipboard, FileWarning, Globe, Trash } from "lucide-react";
 import { useDeleteFile } from "@/services/hooks/files";
 import { toast } from "@/hooks/use-toast";
+import {format, parseISO} from 'date-fns'
 
 interface Props {
   file: {
@@ -58,6 +59,11 @@ export function UploadFileCard({ file, onDelete }: Props) {
     });
   };
   
+  function formatDate(date: string){
+    const formattedDate = format(parseISO(date), "dd/MM/yyyy 'às' HH:mm")
+
+    return formattedDate
+  }
 
   return (
     <Card className={`${file.status === "error" && "border-red-600"} flex flex-col justify-between relative aspect-video`}>
@@ -82,9 +88,9 @@ export function UploadFileCard({ file, onDelete }: Props) {
             <div className="flex flex-col gap-1">
               <div className="flex flex-row items-center gap-2">
                 <span className="truncate max-w-full">{file.title}</span>
-                <Badge>{file.sizeInBytes}</Badge>
+                <Badge>{(file.sizeInBytes! / 1024 / 1024).toFixed(2) + "MB"}</Badge>
               </div>
-              <small className="text-muted-foreground">{file.createdAt}</small>
+              <small className="text-muted-foreground">{formatDate(file.createdAt!)}</small>
             </div>
           </CardHeader>
           <CardContent>
@@ -107,10 +113,10 @@ export function UploadFileCard({ file, onDelete }: Props) {
                       rows={4}
                       className="text-muted-foreground"
                       readOnly
-                    >{`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
+                    >{`<iframe src="http://incorporae.com.br/file_view/${file.id}" width="1280" height="720"></iframe>`}</Textarea>
                     <DialogFooter>
                       <CopyToClipboard
-                        text={`<iframe src="http://localhost:3000/file_view/${file.id}" width="1280" height="720"></iframe>`}
+                        text={`<iframe src="http://incorporae.com.br/file_view/${file.id}" width="1280" height="720"></iframe>`}
                         onCopy={() => {
                           setCopied(true);
                           setTimeout(() => {
@@ -131,7 +137,7 @@ export function UploadFileCard({ file, onDelete }: Props) {
                 </Dialog>
 
                 <CopyToClipboard
-                  text={`http://localhost:3000/doc/${file.id}`}
+                  text={`https://incorporae.com.br/doc/${file.id}`}
                   onCopy={handleShareLink}
                 >
                   <Button variant="outline">

@@ -113,7 +113,7 @@ export default function Analytics() {
   
   function liveViewInitializer(docId: string) {
     if (!socketRef.current) {
-      socketRef.current = io("http://127.0.0.1:3333", {
+      socketRef.current = io("https://api.incorporae.com.br", {
         transports: ["websocket"],
       });
   
