@@ -16,7 +16,7 @@ export function Hero() {
           </div>
           {/* End Gradients */}
           <div className="relative z-10 mt-14">
-            <div className="container py-8 md:py-10 lg:py-12">
+            <div className="container py-14 md:py-10 lg:py-24">
               <div className="max-w-2xl text-center mx-auto mb-6">
                 <div className="max-w-2xl flex flex-col gap-6 items-center">
                

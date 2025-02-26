@@ -133,7 +133,7 @@ export function PricingSectionCards() {
         <div className="container flex flex-col gap-1 py-8 md:py-10 lg:py-12">
           <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
             <h2 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-              Pricing
+              Preços
             </h2>
             <p className="mt-1 text-muted-foreground">
               Escolha o plano ideal para você.

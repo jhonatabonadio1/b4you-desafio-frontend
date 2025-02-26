@@ -19,7 +19,7 @@ import CopyToClipboard from "react-copy-to-clipboard";
 import { Check, Clipboard, FileWarning, Globe, Trash } from "lucide-react";
 import { useDeleteFile } from "@/services/hooks/files";
 import { toast } from "@/hooks/use-toast";
-import {format, parseISO} from 'date-fns'
+import { format, parseISO } from "date-fns";
 
 interface Props {
   file: {
@@ -58,45 +58,59 @@ export function UploadFileCard({ file, onDelete }: Props) {
       title: "Link copiado com sucesso",
     });
   };
-  
-  function formatDate(date: string){
-    const formattedDate = format(parseISO(date), "dd/MM/yyyy 'às' HH:mm")
 
-    return formattedDate
+  function formatDate(date: string) {
+    const formattedDate = format(parseISO(date), "dd/MM/yyyy 'às' HH:mm");
+
+    return formattedDate;
   }
 
   return (
-    <Card className={`${file.status === "failed" && "border-red-600"} flex flex-col justify-between relative aspect-video`}>
+    <Card
+      className={`${
+        file.status === "failed" && "border-red-600"
+      } flex flex-col justify-between relative aspect-video`}
+    >
       {file.status === "loading" ? (
         <div className="flex w-full h-full items-center justify-center absolute top-0 left-0">
           <Icons.spinner className="animate-spin" />
         </div>
-      ) : 
-        file.status === "failed" ? (
-          <CardHeader>
-            <div className="flex flex-col gap-1">
-              <div className="flex flex-row items-center gap-2">
-                <span className="truncate max-w-full">{file.title}</span>
-              
-              </div>
-              <span className="flex flex-row items-center gap-2 text-red-500 mt-2"><FileWarning /> Não foi possível realizar o upload</span>
+      ) : file.status === "failed" ? (
+        <CardHeader>
+          <div className="flex flex-col gap-1">
+            <div className="flex flex-row items-center gap-2">
+              <span className="truncate max-w-full">{file.title}</span>
             </div>
-          </CardHeader>
-        ) : (
+            <span className="flex flex-row items-center gap-2 text-red-500 mt-2">
+              <FileWarning /> Não foi possível realizar o upload
+            </span>
+          </div>
+        </CardHeader>
+      ) : (
         <>
           <CardHeader>
             <div className="flex flex-col gap-1">
-              <div className="flex flex-row items-center gap-2">
-                <span className="truncate flex-1">{file.title}</span>
-                <Badge className="w-max">{(file.sizeInBytes! / 1024) > 1000 ? (file.sizeInBytes! / 1024 / 1024).toFixed(2) + " GB" :  (file.sizeInBytes! / 1024 / 1024).toFixed(2) + " MB"}</Badge>
+              <div className="flex flex-row w-full items-center gap-2 overflow-hidden">
+                <div className="flex-1 min-w-0">
+                  <span className="truncate block w-full overflow-hidden text-ellipsis whitespace-nowrap">
+                    {file.title!.length > 35 ? file.title?.substring(0, 35) + "..." : file.title}
+                  </span>
+                </div>
+                <Badge className="w-max self-end">
+                  {file.sizeInBytes! / 1024 > 1000
+                    ? (file.sizeInBytes! / 1024 / 1024).toFixed(2) + " GB"
+                    : (file.sizeInBytes! / 1024).toFixed(2) + " MB"}
+                </Badge>
               </div>
-              <small className="text-muted-foreground">{formatDate(file.createdAt!)}</small>
+
+              <small className="text-muted-foreground">
+                {formatDate(file.createdAt!)}
+              </small>
             </div>
           </CardHeader>
           <CardContent>
             {file.status === "completed" && (
               <div className="flex items-center justify-center gap-2">
-        
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button className="w-full">Incorporar</Button>
@@ -180,8 +194,6 @@ export function UploadFileCard({ file, onDelete }: Props) {
                 </Dialog>
               </div>
             )}
-
-       
           </CardContent>
         </>
       )}
