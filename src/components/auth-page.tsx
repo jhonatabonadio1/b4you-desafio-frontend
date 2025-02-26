@@ -20,10 +20,8 @@ export default function AuthPage({ render }: Props) {
           <div className="grid items-center md:grid-cols-2 gap-8 lg:gap-12">
             <div className="flex flex-col gap-3">
               <Link href="/" className="mr-4 flex items-center gap-2 lg:mr-6">
-                <Icons.logo className="h-10 w-10" />
-                <span className="hidden font-bold lg:inline-block text-lg">
-                  Incorporaê!
-                </span>
+                <Icons.logoFull className="h-auto w-44 mb-2" />
+              
               </Link>
 
               {/* Title */}

@@ -64,12 +64,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <div className={`${state === "expanded" && "p-2"}`}>
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center ">
            
             {state === "expanded" ? (
-             <Icons.logoFull className="w-28" />
+             <Icons.logoFull className="w-32 h-auto" />
             ) : (
-              <Icons.logo className="h-8 w-8" />
+              <Icons.logo className="h-8 w-8 p-1" />
             )}
           </Link>
         </div>
