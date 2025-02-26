@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {  useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Icons } from "../icons";
 import { Badge } from "../ui/badge";
@@ -65,8 +65,6 @@ export function UploadFileCard({ file, onDelete }: Props) {
     return formattedDate;
   }
 
-  
-
   return (
     <Card
       className={`${
@@ -92,8 +90,8 @@ export function UploadFileCard({ file, onDelete }: Props) {
         <>
           <CardHeader className="flex flex-col  w-full">
             <div className="flex flex-1 overflow-auto flex-row items-center justify-between gap-2">
-              <div className={`truncate flex-1 max-w-[100px] lg:max-w-md min-w-0l`}>
-                {file.title}
+              <div className="truncate flex-1 max-w-xs lg:max-w-md min-w-0l">
+                {file.title!.length > 26 ? file.title!.substring(0, 26) + "..." : file.title}
               </div>
 
               <Badge>
