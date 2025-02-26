@@ -193,7 +193,8 @@ export default function Documents() {
                 </div>
               )}
 
-              <div className="grid auto-rows-min gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+<div className="grid auto-rows-min gap-4 w-full sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+
                 {uploadingFiles.map((file: FileProps) => (
                   <UploadFileCard
                     key={file.id}

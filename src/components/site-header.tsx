@@ -20,7 +20,7 @@ export function SiteHeader() {
             {isAuthenticated ? (
               <nav className="flex items-center gap-2">
                 <Button
-                  variant="outline"
+                 
                   onClick={() => route.push("/documents")}
                 >
                   Meu dashboard
