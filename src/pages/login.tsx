@@ -7,7 +7,7 @@ export default function SignIn() {
   return (
     <>
       <Head>
-        <title>Acesse sua conta - Incorporae!</title>
+        <title>Acesse sua conta - Incorporaê</title>
       </Head>
       <AuthPage render={<LoginForm />} />
     </>

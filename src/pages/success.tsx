@@ -39,7 +39,7 @@ export default function Success() {
   return (
     <>
       <Head>
-        <title>Compra Concluída - Incorporae!</title>
+        <title>Compra Concluída - Incorporaê</title>
       </Head>
       <div data-wrapper="" className="border-grid flex flex-1 flex-col">
         <main className="flex flex-1 flex-col">

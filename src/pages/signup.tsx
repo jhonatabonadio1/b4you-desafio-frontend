@@ -10,7 +10,7 @@ export default function SignUp() {
   return (
     <>
       <Head>
-        <title>Crie sua conta grátis - Incorporae!</title>
+        <title>Crie sua conta grátis - Incorporaê</title>
       </Head>
       <AuthPage render={<SignUpForm />} />
     </>

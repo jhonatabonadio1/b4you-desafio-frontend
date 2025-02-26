@@ -115,7 +115,7 @@ export function DropZone() {
 
         {/* Botões de ação */}
         <div className="flex gap-2 mt-4 justify-end">
-          {/* Botão Incorporae! abre o modal de pré-visualização */}
+          {/* Botão Incorporaê abre o modal de pré-visualização */}
           {file && (
             <Button
               disabled={!file}

@@ -129,7 +129,7 @@ export default function Documents() {
   return (
     <>
       <Head>
-        <title>Meus Documentos - Incorporae!</title>
+        <title>Meus Documentos - Incorporaê</title>
       </Head>
       <SidebarProvider>
         <AppSidebar />

@@ -40,7 +40,7 @@ export default function Doc() {
   return (
     <>
       <Head>
-        <title>{docTitle} - Incorporae!</title>
+        <title>{docTitle} - Incorporaê</title>
       </Head>
 
       <div

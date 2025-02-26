@@ -34,7 +34,7 @@ export default function Settings() {
   return (
     <>
       <Head>
-        <title>Configurações - Incorporae!</title>
+        <title>Configurações - Incorporaê</title>
       </Head>
       <SidebarProvider>
         <AppSidebar />

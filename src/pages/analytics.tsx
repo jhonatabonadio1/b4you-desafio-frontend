@@ -233,7 +233,7 @@ export default function Analytics() {
   return (
     <>
       <Head>
-        <title>Análises - Incorporae!</title>
+        <title>Análises - Incorporaê</title>
       </Head>
       <SidebarProvider>
         <AppSidebar />

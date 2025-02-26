@@ -22,7 +22,7 @@ export default function Home() {
     <>
       <Head>
         <title>
-          Faça upload de seus PDFs e incorpore em seu site - Incorporae!
+          Faça upload de seus PDFs e incorpore em seu site - Incorporaê
         </title>
       </Head>
       <div data-wrapper="" className="border-grid flex flex-1 flex-col">

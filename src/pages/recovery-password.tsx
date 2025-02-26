@@ -11,7 +11,7 @@ export default function RecoverPassword() {
   return (
     <>
       <Head>
-        <title>Trocar senha - Incorporae!</title>
+        <title>Trocar senha - Incorporaê</title>
       </Head>
       <AuthPage render={<RecoverForm />} />
     </>

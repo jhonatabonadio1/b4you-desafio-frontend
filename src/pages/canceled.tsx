@@ -39,7 +39,7 @@ export default function Success() {
   return (
     <>
       <Head>
-        <title>Compra Cancelada - Incorporae!</title>
+        <title>Compra Cancelada - Incorporaê</title>
       </Head>
       <div data-wrapper="" className="border-grid flex flex-1 flex-col">
         <main className="flex flex-1 flex-col">

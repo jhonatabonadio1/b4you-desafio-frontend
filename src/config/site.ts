@@ -1,5 +1,5 @@
 export const siteConfig = {
-    name: "Incorporae!",
+    name: "Incorporaê",
     url: "https://incorporae.com.br",
     ogImage: "",
     description:

@@ -41,7 +41,7 @@ export default function View() {
   return (
     <>
       <Head>
-        <title>{docTitle} - Incorporae!</title>
+        <title>{docTitle} - Incorporaê</title>
       </Head>
 
       <div

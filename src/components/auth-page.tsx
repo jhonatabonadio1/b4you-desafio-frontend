@@ -93,7 +93,7 @@ export default function AuthPage({ render }: Props) {
           {/* Clients Section */}
           <div className="mt-6 md:mt-12 py-3 flex items-center text-muted-foreground text-sm gap-x-1.5 after:flex-[1_1_0%] after:border-t after:ms-6 after:border-t-muted-foreground/50">
             <span className="font-semibold">50,000</span>
-            empresas e profissionais já confiam na Incorporae!
+            empresas e profissionais já confiam na Incorporaê
           </div>
           {/* Clients */}
           <div className="flex flex-wrap gap-x-6 sm:gap-x-12 lg:gap-x-24">

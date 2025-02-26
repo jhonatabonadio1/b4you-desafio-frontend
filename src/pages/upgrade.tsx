@@ -8,7 +8,7 @@ export default function Success() {
   return (
     <>
       <Head>
-        <title>Upgrade - Incorporae!</title>
+        <title>Upgrade - Incorporaê</title>
       </Head>
       <div data-wrapper="" className="border-grid flex flex-1 flex-col">
         <SiteHeader />

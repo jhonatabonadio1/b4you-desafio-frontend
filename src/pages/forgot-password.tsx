@@ -8,7 +8,7 @@ export default function ForgotPassword() {
   return (
     <>
       <Head>
-        <title>Recupere sua senha - Incorporae!</title>
+        <title>Recupere sua senha - Incorporaê</title>
       </Head>
       <AuthPage render={<ForgotForm />} />
     </>

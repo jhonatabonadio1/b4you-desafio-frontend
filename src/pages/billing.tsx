@@ -28,7 +28,7 @@ export default function Pagamentos() {
   return (
     <>
       <Head>
-        <title>Pagamentos - Incorporae!</title>
+        <title>Pagamentos - Incorporaê</title>
       </Head>
       <SidebarProvider>
         <AppSidebar />

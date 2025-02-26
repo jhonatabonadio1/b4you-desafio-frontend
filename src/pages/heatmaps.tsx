@@ -78,7 +78,7 @@ export default function Heatmaps() {
   return (
     <>
       <Head>
-        <title>Mapas de calor - Incorporae!</title>
+        <title>Mapas de calor - Incorporaê</title>
       </Head>
       <SidebarProvider>
         <AppSidebar />
