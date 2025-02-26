@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Card, CardContent, CardHeader } from "../ui/card";
 import { Icons } from "../icons";
 import { Badge } from "../ui/badge";
