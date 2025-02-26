@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { DropZone } from "./drop-zone";
+import { Icons } from "./icons";
 
 export function Hero() {
   return (
@@ -19,7 +21,10 @@ export function Hero() {
             <div className="container py-14 md:py-10 lg:py-24">
               <div className="max-w-2xl text-center mx-auto mb-6">
                 <div className="max-w-2xl flex flex-col gap-6 items-center">
-               
+                <Link href="/" className="mr-4 flex items-center gap-2 mb-6 lg:mr-6">
+        <Icons.logoFull className="h-12" />
+      
+      </Link>
                   <h1 className="scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl">
                   Tenha Insights dos Seus PDFs em Tempo Real
                   </h1>
