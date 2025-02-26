@@ -16,6 +16,26 @@ export default function Storage() {
 
   const [changePlanModalIsOpen, setChangePlanModalIsOpen] = useState(false);
 
+
+  function formatSize(sizeInKB: number): string {
+    const sizeInMB = sizeInKB / 1024;  // Converte KB para MB
+    const sizeInGB = sizeInMB / 1024;  // Converte MB para GB
+
+    // Se o valor em GB for maior ou igual a 1, mostra em GB sem casas decimais
+    if (sizeInGB >= 1) {
+        return Math.round(sizeInMB / 1000) + " GB";  // Arredonda para o valor inteiro em GB
+    }
+    
+    // Se o valor em MB for maior ou igual a 1, mostra em MB sem casas decimais
+    if (sizeInMB >= 1) {
+        return Math.round(sizeInMB) + " MB";  // Arredonda para o valor inteiro em MB
+    }
+    
+    // Caso contrário, retorna em KB
+    return sizeInKB + " KB"; // Exibe em KB se for menor que 1 MB
+}
+
+
   return (
     <>
       <div className="pointer-events-none fixed inset-x-0 bottom-0 sm:flex sm:justify-center sm:px-6 sm:pb-5 lg:px-8">
@@ -34,9 +54,9 @@ export default function Storage() {
                 </span>
               </span>
               <span className="self-end text-xs">
-                Max.{" "}
+                Max.
                 <span className="font-bold">
-                {(totalLimit / 1024) > 1000 ? (totalLimit / 1024).toFixed(2).charAt(0) + " GB" : (totalLimit / 1024).toFixed(2) + " MB"}
+                {formatSize(totalLimit)}
                 </span>
               </span>
             </div>
