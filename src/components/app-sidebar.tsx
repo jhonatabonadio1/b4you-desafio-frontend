@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, {useEffect} from "react";
 import {
   ChartColumn,
   FileText,
@@ -8,6 +8,7 @@ import {
 
 import { NavMenu } from "@/components/nav-menu";
 import { NavUser } from "@/components/nav-user";
+import Intercom from '@intercom/messenger-js-sdk';
 
 import {
   Sidebar,
@@ -46,10 +47,18 @@ const data = {
       icon: ChartColumn,
     },
   ],
-};
+};  
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { state } = useSidebar();
+
+  useEffect(() => {
+    Intercom({
+      app_id: 'qur8i35e',
+    });
+  }, [])
+  
 
   return (
     <Sidebar collapsible="icon" {...props}>
