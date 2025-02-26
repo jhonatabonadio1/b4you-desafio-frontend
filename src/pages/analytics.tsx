@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AppSidebar } from "@/components/app-sidebar";
 import { ModeSwitcher } from "@/components/mode-switcher";
+import {addSeconds, format} from 'date-fns'
 
 import {
   Breadcrumb,
@@ -230,6 +231,15 @@ export default function Analytics() {
 
   const [activeUsers, setActiveUsers] = useState(0);
 
+  const formatSeconds = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.round(totalSeconds % 60);
+  
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
+
+  
   return (
     <>
       <Head>
@@ -403,14 +413,10 @@ export default function Analytics() {
                                 <TableCell>{item.views}</TableCell>
 
                                 <TableCell>
-                                  {item.averageTime < 60
-                                    ? item.averageTime + "s"
-                                    : item.averageTime + " min"}
+                                  {formatSeconds(item.averageTime)}
                                 </TableCell>
                                 <TableCell>
-                                  {item.totalTime < 60
-                                    ? item.totalTime + "s"
-                                    : item.totalTime + " min"}
+                                  {formatSeconds(item.totalTime)}
                                 </TableCell>
                               </TableRow>
                             ))}

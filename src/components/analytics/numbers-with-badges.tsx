@@ -17,6 +17,15 @@ interface TrackingNumbersProps{
 }
 
 export default function NumbersWithBadges({data}: TrackingNumbersProps) {
+
+  const formatSeconds = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.round(totalSeconds % 60);
+  
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
+  
   return (
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -74,19 +83,12 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
                 </Badge>
                
               </div>
-              {
-                data.totalInteractionTime < 60 ?     <div>
-                <h3 className="text-2xl font-semibold">{data.totalInteractionTime.toFixed(2).replace(".", ",")} s</h3>
+               <div>
+                <h3 className="text-2xl font-semibold">{formatSeconds(data.totalInteractionTime)}</h3>
                 <p className="text-xs text-muted-foreground mt-1">
                   Tempo no total
                 </p>
-              </div> :     <div>
-                <h3 className="text-2xl font-semibold">{(data.totalInteractionTime / 60).toFixed(2).replace(".", ",")} min</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                Tempo no total
-                </p>
               </div>
-              }
             </div>
           </CardContent>
         </Card>
@@ -103,19 +105,12 @@ export default function NumbersWithBadges({data}: TrackingNumbersProps) {
                 </Badge>
               
               </div>
-              {
-                data.averageTimePerPage < 120 ?     <div>
-                <h3 className="text-2xl font-semibold">{data.averageTimePerPage.toFixed(2).replace(".", ",")} s</h3>
+            <div>
+                <h3 className="text-2xl font-semibold">{formatSeconds(data.averageTimePerPage)}</h3>
                 <p className="text-xs text-muted-foreground mt-1">
                 Tempo por página
                 </p>
-              </div> :     <div>
-                <h3 className="text-2xl font-semibold">{(data.averageTimePerPage / 60).toFixed(2).replace(".", ",")} min</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Tempo por página
-                </p>
-              </div>
-              }
+              </div> 
               
             </div>
           </CardContent>
