@@ -59,7 +59,7 @@ interface RequestProps {
 
 export function PlanSelect({ isOpen, onChange }: Props) {
   const { user } = useContext(AuthContext);
-  const {createCheckout} = useContext(StripeContext)
+  const { createCheckout } = useContext(StripeContext);
 
   const route = useRouter();
 
@@ -98,30 +98,29 @@ export function PlanSelect({ isOpen, onChange }: Props) {
 
     setIsLoadingCheckout(true);
 
-    console.log(plans.currentPlan.id)
+    console.log(plans.currentPlan.id);
 
     if (plans.currentPlan.id !== "DEFAULT") {
-
-      try{
-        const response = await api.get("/stripe/portal")
-        console.log(response.data)
-        return route.push(response.data)
-      }catch{
+      try {
+        const response = await api.get("/stripe/portal");
+        console.log(response.data);
+        return route.push(response.data);
+      } catch {
         toast({
           title: "Ocorreu um problema",
           description: "Não foi possível abrir o portal de assinaturas.",
-          variant:  "destructive"
-        })
-      }finally{
-        setIsLoadingCheckout(false)
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingCheckout(false);
       }
-    }else{
+    } else {
       const priceId = isAnnual ? plan.annualPriceId : plan.monthlyPriceId;
 
       createCheckout({
         priceId,
-        onFinally: () => setIsLoadingCheckout(false)
-      })
+        onFinally: () => setIsLoadingCheckout(false),
+      });
     }
   }
 
@@ -156,6 +155,24 @@ export function PlanSelect({ isOpen, onChange }: Props) {
     }
 
     return currentPlanId === plan.id ? true : false;
+  }
+
+  function formatSize(sizeInKB: number): string {
+    const sizeInMB = sizeInKB / 1024; // Converte KB para MB
+    const sizeInGB = sizeInMB / 1024; // Converte MB para GB
+
+    // Se o valor em GB for maior ou igual a 1, mostra em GB sem casas decimais
+    if (sizeInGB >= 1) {
+      return Math.round(sizeInMB / 1000) + " GB"; // Arredonda para o valor inteiro em GB
+    }
+
+    // Se o valor em MB for maior ou igual a 1, mostra em MB sem casas decimais
+    if (sizeInMB >= 1) {
+      return Math.round(sizeInMB) + " MB"; // Arredonda para o valor inteiro em MB
+    }
+
+    // Caso contrário, retorna em KB
+    return sizeInKB + " KB"; // Exibe em KB se for menor que 1 MB
   }
 
   return (
@@ -248,29 +265,20 @@ export function PlanSelect({ isOpen, onChange }: Props) {
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até{" "}
-                              {plan.limit / 1024 > 1000
-                                ? (plan.limit / 1024).toFixed(2).charAt(0) +
-                                  " GB"
-                                : plan.limit / 1024 + " MB"}{" "}
-                              de armazenamento
+                              Até {formatSize(plan.limit)} de armazenamento
                             </span>
                           </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até{" "}
-                              {plan.maxSize / 1024 > 1000
-                                ? (plan.maxSize / 1024).toFixed(2).charAt(0) +
-                                  " GB"
-                                : plan.maxSize / 1024 + " MB"}
-                              por upload
+                              Até {formatSize(plan.maxSize)} por upload
                             </span>
                           </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
-                              Até {plan.fileSessions} sessões de tracking por PDF.
+                              Até {plan.fileSessions} sessões de tracking por
+                              PDF.
                             </span>
                           </li>
                           <li className="flex space-x-2">
