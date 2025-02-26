@@ -262,6 +262,12 @@ export function PlanSelect({ isOpen, onChange }: Props) {
 
                       <CardContent>
                         <ul className="space-y-2.5 text-sm">
+                        <li className="flex space-x-2">
+                            <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
+                            <span className="text-muted-foreground">
+                              Upload de até {plan.uploadFiles} PDFs
+                            </span>
+                          </li>
                           <li className="flex space-x-2">
                             <CheckIcon className="flex-shrink-0 mt-0.5 h-4 w-4" />
                             <span className="text-muted-foreground">
