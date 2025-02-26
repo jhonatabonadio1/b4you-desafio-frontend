@@ -65,11 +65,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <div className={`${state === "expanded" && "p-2"}`}>
           <Link href="/" className="flex items-center gap-2">
-            <Icons.logo className="h-8 w-8" />
-            {state === "expanded" && (
-              <span className=" font-bold lg:inline-block text-lg">
-                Incorporaê!
-              </span>
+            <Icons.logoFull className="h-8 w-8" />
+            {state === "expanded" ? (
+             <Icons.logoFull className="w-36" />
+            ) : (
+              <Icons.logo className="h-8 w-8" />
             )}
           </Link>
         </div>
