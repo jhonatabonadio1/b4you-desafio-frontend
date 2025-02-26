@@ -65,6 +65,27 @@ export function UploadFileCard({ file, onDelete }: Props) {
     return formattedDate;
   }
 
+
+
+  function formatSize(sizeInKB: number): string {
+    const sizeInMB = sizeInKB / 1024 / 1024; // Converte KB para MB
+    const sizeInGB = sizeInMB / 1024 / 1024; // Converte MB para GB
+
+    // Se o valor em GB for maior ou igual a 1, mostra em GB sem casas decimais
+    if (sizeInGB >= 1) {
+      return Math.round(sizeInMB / 1000) + " GB"; // Arredonda para o valor inteiro em GB
+    }
+
+    // Se o valor em MB for maior ou igual a 1, mostra em MB sem casas decimais
+    if (sizeInMB >= 1) {
+      return Math.round(sizeInMB) + " MB"; // Arredonda para o valor inteiro em MB
+    }
+
+    // Caso contrário, retorna em KB
+    return sizeInKB.toString().substring(0, 2) + " KB"; // Exibe em KB se for menor que 1 MB
+  }
+
+
   return (
     <Card
       className={`${
@@ -95,9 +116,7 @@ export function UploadFileCard({ file, onDelete }: Props) {
               </div>
 
               <Badge>
-                {file.sizeInBytes! / 1024 > 1000
-                  ? (file.sizeInBytes! / 1024 / 1024).toFixed(2) + " GB"
-                  : (file.sizeInBytes! / 1024).toFixed(2) + " MB"}
+                {formatSize(file.sizeInBytes!)}
               </Badge>
             </div>
 

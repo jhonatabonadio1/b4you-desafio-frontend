@@ -274,7 +274,7 @@ export default function Analytics() {
             </header>
 
             <div className="flex flex-col gap-4 relative h-full w-full">
-              <div className="flex flex-row items-center gap-4 justify-between">
+              <div className="flex flex-col lg:flex-row items-center gap-4 justify-between">
                 <Form {...form}>
                   <form
                     onSubmit={form.handleSubmit(onSubmit)}
@@ -290,7 +290,7 @@ export default function Analytics() {
                               Documento
                             </FormLabel>
                             <FormControl className="w-full">
-                              {!loadingDocs && (
+                
                                 <DocumentsCombobox
                                   data={documentsPickerData}
                                   value={form.watch("docId")}
@@ -298,7 +298,7 @@ export default function Analytics() {
                                     form.setValue("docId", docId)
                                   }
                                 />
-                              )}
+                            
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -340,7 +340,7 @@ export default function Analytics() {
                 </Form>
 
                 {pdfUrl && (
-                  <div className="p-4 border border-red-600 flex rounded-lg flex-col gap-2">
+                  <div className="p-4 w-full lg:w-auto items-center lg:items-start border border-red-600 flex rounded-lg flex-col gap-2">
                     <Badge
                       variant="outline"
                       className="text-red-600 border-red-600 self-center"

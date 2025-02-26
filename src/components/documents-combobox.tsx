@@ -57,6 +57,7 @@ export function DocumentsCombobox({ data, value, onChange }: Props) {
               {data.map((framework) => (
                 <CommandItem
                   key={framework.value}
+                  
                   value={framework.value}
                   onSelect={(currentValue) => {
                     onChange(currentValue === value ? "" : currentValue);
@@ -69,7 +70,7 @@ export function DocumentsCombobox({ data, value, onChange }: Props) {
                       value === framework.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {framework.label}
+                  <span className="truncate max-w-full">{framework.label}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Rocket } from "lucide-react";
 import { Progress } from "./ui/progress";
 import { useStorage } from "@/services/hooks/storage";
-import { PlanSelect } from "./plan-select";
-import { useState } from "react";
+
+import { useRouter } from "next/router";
 
 export default function Storage() {
   // 🔥 Hook para buscar os dados de armazenamento
@@ -14,8 +14,7 @@ export default function Storage() {
   const totalLimit = data?.totalLimit || 0; // 50MB em bytes
   const usedPercentage = Math.min((totalUsed / totalLimit) * 100, 100); // Evita valores acima de 100%
 
-  const [changePlanModalIsOpen, setChangePlanModalIsOpen] = useState(false);
-
+ const route = useRouter();
 
   function formatSize(sizeInKB: number): string {
     const sizeInMB = sizeInKB / 1024;  // Converte KB para MB
@@ -64,17 +63,14 @@ export default function Storage() {
           <Button
             size="sm"
             variant="secondary"
-            onClick={() => setChangePlanModalIsOpen(true)}
+            onClick={() => route.push("/upgrade")}
             className="flex items-center gap-x-1"
           >
             Upgrade <Rocket className="h-4 w-4" />
           </Button>
         </div>
 
-        <PlanSelect
-          isOpen={changePlanModalIsOpen}
-          onChange={setChangePlanModalIsOpen}
-        />
+        
       </div>
     </>
   );
