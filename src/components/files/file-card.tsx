@@ -16,7 +16,7 @@ import {
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import CopyToClipboard from "react-copy-to-clipboard";
-import { Check, Clipboard, FileWarning, Globe, Trash } from "lucide-react";
+import { Check, Clipboard, FileCode2, FileWarning,  Trash } from "lucide-react";
 import { useDeleteFile } from "@/services/hooks/files";
 import { toast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
@@ -109,9 +109,17 @@ export function UploadFileCard({ file, onDelete }: Props) {
           <CardContent>
             {file.status === "completed" && (
               <div className="flex items-center justify-center gap-2">
+                 <CopyToClipboard
+                  text={`https://incorporae.com.br/doc/${file.id}`}
+                  onCopy={handleShareLink}
+                >
+                  <Button className="w-full">
+                    Compartilhar
+                  </Button>
+                </CopyToClipboard>
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button className="w-full">Incorporar</Button>
+                    <Button variant="outline" ><FileCode2 /></Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -148,14 +156,7 @@ export function UploadFileCard({ file, onDelete }: Props) {
                   </DialogContent>
                 </Dialog>
 
-                <CopyToClipboard
-                  text={`https://incorporae.com.br/doc/${file.id}`}
-                  onCopy={handleShareLink}
-                >
-                  <Button variant="outline">
-                    <Globe />
-                  </Button>
-                </CopyToClipboard>
+               
 
                 <Dialog>
                   <DialogTrigger asChild>
