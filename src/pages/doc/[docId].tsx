@@ -58,12 +58,10 @@ export default function Doc() {
                 ref={pdfWrapperRef}
                 className="border border-b-0 border-top-0 border-grid relative flex flex-col justify-center  items-center w-full max-w-3xl bg-primary-foreground max-h-full overflow-y-auto h-full"
               >
-                <div className="fixed top-4 right-4 text-primary-foreground bg-primary px-3 py-2 rounded-full z-50">
+                <div className="fixed top-4 right-4 text-primary-foreground bg-primary h-10 w-10 flex items-center justify-center rounded-full z-50">
                   <Link href="/" className="flex items-center gap-2">
-                    <Icons.logo className="h-6 w-6" />
-                    <span className="hidden font-bold lg:inline-block text-md">
-                      Incorporaê!
-                    </span>
+                    <Icons.logo className="w-7 h-7 text-primary-foreground" />
+                 
                   </Link>
                 </div>
                 <DocumentHeatmapCapture
