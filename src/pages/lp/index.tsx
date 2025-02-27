@@ -8,6 +8,7 @@ import homemPreocupado from "@/assets/homem-preocupado.webp";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { SiteFooter } from "@/components/site-footer";
+import Head from "next/head";
 
 const faqs = [
     {
@@ -46,7 +47,12 @@ const faqs = [
 export default function LP() {
   const route = useRouter();
   return (
+    <>
+    <Head>
+        <title>Transforme Seus PDFs em Insights Poderosos com o Incorporaê</title>
+    </Head>
     <div className="flex  flex-col">
+        
       <section className="relative overflow-hidden py-24 lg:py-32">
       <div
             aria-hidden="true"
@@ -417,5 +423,6 @@ export default function LP() {
 
       <SiteFooter />
     </div>
+    </>
   );
 }
