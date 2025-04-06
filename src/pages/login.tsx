@@ -7,7 +7,7 @@ export default function SignIn() {
   return (
     <>
       <Head>
-        <title>Acesse sua conta - Incorporaê</title>
+        <title>Acesse sua conta - B4You</title>
       </Head>
       <AuthPage render={<LoginForm />} />
     </>

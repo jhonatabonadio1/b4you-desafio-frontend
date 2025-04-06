@@ -18,23 +18,25 @@ import Link from "next/link";
 import { Icons } from "./icons";
 import { useRouter } from "next/router";
 
-// Esquema de validação com Zod
-const signUpSchema = z.object({
-  firstName: z.string().min(2, "Mínimo de 2 caracteres"),
-  lastName: z.string().min(2, "Mínimo de 2 caracteres"),
-  email: z.string().email("E-mail inválido"),
-  empresa: z.string().optional(),
-  password: z.string()
-  .min(8, "A senha deve ter pelo menos 8 caracteres")
-  .regex(
-    /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/,
-    "Pelo menos 1 caractere especial e 1 leletra maiúscula"
-  ),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
-  path: ["confirmPassword"],
-});
+
+const signUpSchema = z
+  .object({
+    firstName: z.string().min(2, "Mínimo de 2 caracteres"),
+    lastName: z.string().min(2, "Mínimo de 2 caracteres"),
+    email: z.string().email("E-mail inválido"),
+    password: z
+      .string()
+      .min(8, "A senha deve ter pelo menos 8 caracteres")
+      .regex(
+        /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/,
+        "Pelo menos 1 caractere especial e 1 leletra maiúscula"
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
 
 export function SignUpForm() {
   const { signUp } = useContext(AuthContext);
@@ -42,9 +44,8 @@ export function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-
   const route = useRouter();
-  const {selectedPrice, redirectCheckout} = route.query
+  const { selectedPrice, redirectCheckout } = route.query;
 
   const {
     register,
@@ -58,10 +59,14 @@ export function SignUpForm() {
     setLoading(true);
     setError(null);
 
-    const selectedPriceValue = selectedPrice as string
-    const redirectCheckoutValue = redirectCheckout === "true"
+    const selectedPriceValue = selectedPrice as string;
+    const redirectCheckoutValue = redirectCheckout === "true";
 
-    const errorMessage = await signUp({ userData: data, selectedPrice: selectedPriceValue, redirectCheckout: redirectCheckoutValue });
+    const errorMessage = await signUp({
+      userData: data,
+      selectedPrice: selectedPriceValue,
+      redirectCheckout: redirectCheckoutValue,
+    });
 
     if (errorMessage) {
       setError(errorMessage);
@@ -82,7 +87,7 @@ export function SignUpForm() {
               </Alert>
             )}
             <h2 className="text-2xl font-semibold leading-none tracking-tight">
-              Crie sua conta grátis!
+              Crie sua conta, é grátis!
             </h2>
             <CardDescription>
               Preencha os campos abaixo para se cadastrar
@@ -93,50 +98,83 @@ export function SignUpForm() {
               {/* Nome e Sobrenome */}
               <div className="flex flex-col gap-2">
                 <Label htmlFor="first-name">Nome</Label>
-                <Input id="first-name" placeholder="Seu nome" {...register("firstName")} />
+                <Input
+                  id="first-name"
+                  placeholder="Seu nome"
+                  {...register("firstName")}
+                />
                 {errors.firstName && (
-                  <p className="text-red-500 text-sm">{errors.firstName.message}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.firstName.message}
+                  </p>
                 )}
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="last-name">Sobrenome</Label>
-                <Input id="last-name" placeholder="Seu sobrenome" {...register("lastName")} />
+                <Input
+                  id="last-name"
+                  placeholder="Seu sobrenome"
+                  {...register("lastName")}
+                />
                 {errors.lastName && (
-                  <p className="text-red-500 text-sm">{errors.lastName.message}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.lastName.message}
+                  </p>
                 )}
               </div>
 
-              {/* E-mail e Empresa */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-2 col-span-2">
                 <Label htmlFor="email">E-mail</Label>
-                <Input id="email" type="email" placeholder="me@example.com" {...register("email")} />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="me@example.com"
+                  {...register("email")}
+                />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email.message}</p>
                 )}
               </div>
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="company">Empresa (opcional)</Label>
-                <Input id="company" placeholder="Nome da empresa (opcional)" {...register("empresa")} />
-              </div>
 
-              {/* Senha e Confirmar Senha */}
               <div className="flex flex-col gap-2 col-span-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" placeholder="*******" {...register("password")} />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="*******"
+                  {...register("password")}
+                />
                 {errors.password && (
-                  <p className="text-red-500 text-sm">{errors.password.message}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.password.message}
+                  </p>
                 )}
               </div>
               <div className="flex flex-col gap-2 col-span-2">
                 <Label htmlFor="confirm-password">Confirmar Senha</Label>
-                <Input id="confirm-password" type="password" placeholder="*******" {...register("confirmPassword")} />
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  placeholder="*******"
+                  {...register("confirmPassword")}
+                />
                 {errors.confirmPassword && (
-                  <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
+                  <p className="text-red-500 text-sm">
+                    {errors.confirmPassword.message}
+                  </p>
                 )}
               </div>
 
-              <Button type="submit" className="mt-3 col-span-2" disabled={loading}>
-                {loading ? <Icons.spinner className="animate-spin" /> : "Cadastrar"}
+              <Button
+                type="submit"
+                className="mt-3 col-span-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Icons.spinner className="animate-spin" />
+                ) : (
+                  "Cadastrar"
+                )}
               </Button>
             </div>
 

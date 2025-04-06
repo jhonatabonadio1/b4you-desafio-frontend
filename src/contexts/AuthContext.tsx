@@ -31,7 +31,6 @@ type SignUpCredentials = {
     email: string;
     empresa?: string;
     password: string;
-
   };
   actionOnFinally?: () => void;
   selectedPrice?: string;
@@ -48,8 +47,6 @@ type AuthContextData = {
   signUp({
     userData,
     actionOnFinally,
-    selectedPrice,
-    redirectCheckout,
   }: SignUpCredentials): Promise<string | null>;
   user: User;
   isAuthenticated: boolean;
@@ -66,7 +63,7 @@ export const AuthContext = createContext({} as AuthContextData);
 let authChannel: BroadcastChannel;
 
 export function signOut() {
-  destroyCookie(undefined, "incorporae.token");
+  destroyCookie(undefined, "b4you.token");
 
   api.defaults.headers.Authorization = `Bearer`;
 
@@ -99,28 +96,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchCsrfToken = async () => {
-      try {
-        const response = await api.get("/csrf");
-
-        api.interceptors.request.use(async (config) => {
-          if (["post", "put", "delete"].includes(config.method || "")) {
-            const csrfToken = await response.data.csrfToken; // Busca do armazenamento
-            if (csrfToken) {
-              config.headers["X-CSRF-Token"] = csrfToken; // Enviar no header
-            }
-          }
-          return config;
-        });
-      } catch (error) {
-        console.error("Failed to fetch CSRF token:", error);
-      }
-    };
-
-    fetchCsrfToken();
-  }, []);
-
   function updateUser(user: User) {
     setUser(user);
   }
@@ -133,16 +108,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       const response = await api.post("/auth/login", userData);
 
-      const { token, user } = response.data;
-     
-      setCookie(undefined, "incorporae.token", token, {
+      const { accessToken, user } = response.data;
+
+      setCookie(undefined, "b4you.token", accessToken, {
         maxAge: 60 * 60 * 24 * 30, // 30 dias
         path: "/",
       });
 
-      api.defaults.headers.Authorization = `Bearer ${token}`;
+      api.defaults.headers.Authorization = `Bearer ${accessToken}`;
 
-      setUser({ ...user, token });
+      setUser({ ...user, token: accessToken });
 
       if (redirectToCheckoutAction) {
         redirectToCheckoutAction();
@@ -166,27 +141,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function signUp({
     userData,
     actionOnFinally,
-    redirectCheckout,
-    selectedPrice,
   }: SignUpCredentials): Promise<string | null> {
     try {
       await api.post("/auth/register", userData);
 
-      if (redirectCheckout && selectedPrice) {
-        Router.push(
-          "/login?redirectCheckout=" +
-            redirectCheckout +
-            "&selectedPrice=" +
-            selectedPrice
-        );
-      } else {
-        Router.push("/login");
-      }
+      Router.push("/login");
+
       return null;
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.error || "Erro ao criar conta. Tente novamente.";
-      return errorMessage; // Retorna o erro para ser exibido no formulário
+      return errorMessage;
     } finally {
       if (actionOnFinally) {
         actionOnFinally();
@@ -196,7 +161,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     const cookies = parseCookies();
-    const { "incorporae.token": token } = cookies;
+    const { "b4you.token": token } = cookies;
 
     if (token) {
       api

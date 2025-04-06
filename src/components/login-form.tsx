@@ -16,8 +16,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AuthContext } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { Icons } from "./icons";
-import { useRouter } from "next/router";
-import { StripeContext } from "@/contexts/StripeContext";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido"),
@@ -26,7 +24,6 @@ const loginSchema = z.object({
 
 export function LoginForm() {
   const { signIn } = useContext(AuthContext);
-  const { createCheckout} = useContext(StripeContext)
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,28 +36,11 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const route = useRouter();
-  const {selectedPrice, redirectCheckout} = route.query
-
   const onSubmit = async (data: { email: string; password: string }) => {
     setLoading(true);
     setError(null);
 
-    const selectedPriceValue = selectedPrice as string
-    const redirectCheckoutValue = redirectCheckout === "true"
-
-    let errorMessage;
-
-    if(redirectCheckoutValue){
-      const redirectToCheckoutAction = () => createCheckout({
-        priceId: selectedPriceValue,
-      })
-      
-       errorMessage = await signIn({ userData: data, redirectToCheckoutAction });
-    }else{
-       errorMessage = await signIn({ userData: data, });
-    }
-  
+    const errorMessage = await signIn({ userData: data });
 
     if (errorMessage) {
       setError(errorMessage); // Exibir erro no formulário
@@ -126,11 +106,16 @@ export function LoginForm() {
                 )}
               </div>
 
-              <Button type="submit" className="mt-3 col-span-2" disabled={loading}>
-       
-                {
-                  loading ? <Icons.spinner className="animate-spin" /> : "Entrar"
-                }
+              <Button
+                type="submit"
+                className="mt-3 col-span-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Icons.spinner className="animate-spin" />
+                ) : (
+                  "Entrar"
+                )}
               </Button>
             </div>
 

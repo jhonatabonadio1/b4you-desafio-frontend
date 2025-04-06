@@ -31,14 +31,14 @@ import {
 import { ChevronDown } from "lucide-react";
 import { Input } from "../ui/input";
 import { useState } from "react";
-import { Payment } from "./columns";
+import { Campaing } from "./columns";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable({data, columns}: DataTableProps<Payment, Payment>) {
+export function DataTable({data, columns}: DataTableProps<Campaing, Campaing>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
     []
@@ -70,7 +70,7 @@ export function DataTable({data, columns}: DataTableProps<Payment, Payment>) {
     <div className="w-full ">
       <div className="flex items-center py-4">
         <Input
-          placeholder="Filtrar pagamentos..."
+          placeholder="Filtrar campanhas..."
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("email")?.setFilterValue(event.target.value)

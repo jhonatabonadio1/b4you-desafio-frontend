@@ -1,23 +1,19 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { CheckIcon } from "lucide-react";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
-import { FormEvent, useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { api } from "@/services/apiClient";
 import { AuthContext } from "@/contexts/AuthContext";
 import { Icons } from "./icons";
-import { useRouter } from "next/router";
-import { toast } from "@/hooks/use-toast";
-import { StripeContext } from "@/contexts/StripeContext";
 
 interface Plan {
   id: string;
@@ -48,9 +44,6 @@ interface RequestProps {
 
 export function PlanSelect() {
   const { user } = useContext(AuthContext);
-  const { createCheckout } = useContext(StripeContext);
-
-  const route = useRouter();
 
   const [isAnnual, setIsAnnual] = useState(true);
   const [plans, setPlans] = useState({} as RequestProps);
@@ -75,42 +68,6 @@ export function PlanSelect() {
     fetchPlans();
   }, [user.id]);
 
-  const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
-
-  async function createCheckoutSession(
-    e: FormEvent<HTMLFormElement>,
-    plan: Plan
-  ) {
-    e.preventDefault();
-
-    setIsLoadingCheckout(true);
-
-    console.log(plans.currentPlan.id);
-
-    if (plans.currentPlan.id !== "DEFAULT") {
-      try {
-        const response = await api.get("/stripe/portal");
-        console.log(response.data);
-        return route.push(response.data);
-      } catch {
-        toast({
-          title: "Ocorreu um problema",
-          description: "Não foi possível abrir o portal de assinaturas.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingCheckout(false);
-      }
-    } else {
-      const priceId = isAnnual ? plan.annualPriceId : plan.monthlyPriceId;
-
-      createCheckout({
-        priceId,
-        onFinally: () => setIsLoadingCheckout(false),
-      });
-    }
-  }
-
   const formatPrice = (number: number) => {
     const numberCalculated = number / 100;
 
@@ -129,20 +86,6 @@ export function PlanSelect() {
       style: "currency",
     });
   };
-
-  function currentPlan(
-    isAnnual: boolean,
-    currentPlan: { id: string; isAnnual: boolean },
-    plan: { id: string }
-  ) {
-    const { id: currentPlanId } = currentPlan;
-
-    if (currentPlanId === "DEFAULT") {
-      return plan.id === "DEFAULT" ? true : false;
-    }
-
-    return currentPlanId === plan.id ? true : false;
-  }
 
   function formatSize(sizeInKB: number): string {
     const sizeInMB = sizeInKB / 1024; // Converte KB para MB
@@ -163,7 +106,10 @@ export function PlanSelect() {
   }
 
   return (
-    <section className="absolute top-0 left-0 border-grid flex w-full h-full " id="planos">
+    <section
+      className="absolute top-0 left-0 border-grid flex w-full h-full "
+      id="planos"
+    >
       <div className="container-wrapper h-full flex flex-col mt-16 lg:mt-0 lg:items-center lg:justify-center">
         <div className="container flex flex-col gap-1 py-8 md:py-10 lg:py-12 ">
           <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
@@ -223,23 +169,18 @@ export function PlanSelect() {
                 {plans.data &&
                   plans.data.length > 0 &&
                   plans.data.map((plan) => (
-                    <form
-                      key={plan.id}
-                      onSubmit={(e) => createCheckoutSession(e, plan)}
-                      method="POST"
-                    >
+                    <form key={plan.id} method="POST">
                       <Card
                         className={`${plan.featured ? "border-primary" : ""}`}
                       >
                         <CardHeader className="text-center pb-2">
                           <CardTitle className="flex flex-col items-center self-center gap-2 text-3xl">
-                          {plan.featured && (
+                            {plan.featured && (
                               <Badge className="uppercase rounded-full w-max self-center ">
                                 Mais popular
                               </Badge>
                             )}
                             {plan.name}{" "}
-                           
                           </CardTitle>
                           <span className="font-bold text-4xl flex items-end self-center">
                             {isAnnual
@@ -289,35 +230,6 @@ export function PlanSelect() {
                             </li>
                           </ul>
                         </CardContent>
-                        <CardFooter>
-                          <Button
-                            className="w-full"
-                            type="submit"
-                            disabled={
-                              isLoadingCheckout ||
-                              currentPlan(isAnnual, plans.currentPlan, plan)
-                            }
-                            style={{
-                              opacity:
-                                isLoadingCheckout ||
-                                currentPlan(isAnnual, plans.currentPlan, plan)
-                                  ? 0.6
-                                  : 1,
-                            }}
-                          >
-                            {isLoadingCheckout ? (
-                              <Icons.spinner className="animate-spin" />
-                            ) : currentPlan(
-                                isAnnual,
-                                plans.currentPlan,
-                                plan
-                              ) ? (
-                              "Seu plano atual"
-                            ) : (
-                              "Assinar"
-                            )}
-                          </Button>
-                        </CardFooter>
                       </Card>
                     </form>
                   ))}

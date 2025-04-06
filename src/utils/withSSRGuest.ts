@@ -14,10 +14,10 @@ export function withSSRGuest<P extends { [key: string]: any }>(
   ): Promise<GetServerSidePropsResult<P>> => {
     const cookies = parseCookies(ctx);
 
-    if (cookies["incorporae.token"]) {
+    if (cookies["b4you.token"]) {
       return {
         redirect: {
-          destination: "/documents",
+          destination: "/",
           permanent: false,
         },
       };

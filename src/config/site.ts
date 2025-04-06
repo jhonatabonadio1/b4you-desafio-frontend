@@ -1,9 +1,9 @@
 export const siteConfig = {
-    name: "Incorporaê",
-    url: "https://incorporae.com.br",
+    name: "B4You",
+    url: "https://127.0.0.1:3000",
     ogImage: "",
     description:
-      "Faça upload de seu PDF e gere um Iframe para incorporar em seu site. Economize seu servidor!",
+      "Crie campanhas otimizadas com a B4You",
     links: {
       twitter: "https://twitter.com/",
       github: "https://github.com/",

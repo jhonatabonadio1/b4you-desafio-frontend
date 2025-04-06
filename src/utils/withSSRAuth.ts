@@ -15,7 +15,7 @@ export function withSSRAuth<P extends { [key: string]: any }>(
   ): Promise<GetServerSidePropsResult<P>> => {
     const cookies = parseCookies(ctx);
 
-    const token = cookies["incorporae.token"];
+    const token = cookies["b4you.token"];
 
     if (!token) {
       return {
@@ -29,7 +29,7 @@ export function withSSRAuth<P extends { [key: string]: any }>(
     try {
       return await fn(ctx);
     } catch (err) {
-      if (err instanceof AuthTokenError) destroyCookie(ctx, "incorporae.token");
+      if (err instanceof AuthTokenError) destroyCookie(ctx, "b4you.token");
 
       return {
         redirect: {
