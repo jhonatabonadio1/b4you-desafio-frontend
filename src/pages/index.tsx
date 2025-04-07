@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { LucidePlus } from "lucide-react";
 
 import { CampaingsTable } from "@/components/campaings-table";
+import { CreateCampaignDialog } from "@/components/campaing/create-campaing-dialog";
 
 export default function Analytics() {
   return (
@@ -72,13 +73,7 @@ export default function Analytics() {
 
             <div className="flex flex-col gap-4 relative h-full w-full">
               <div className="flex flex-col lg:flex-row items-center gap-4 justify-between">
-                <Button
-                  variant="default"
-                  type="submit"
-                  className="w-full lg:w-auto"
-                >
-                  <LucidePlus /> Criar campanha
-                </Button>
+              <CreateCampaignDialog />
               </div>
 
               <CampaingsTable />

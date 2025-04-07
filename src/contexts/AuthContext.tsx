@@ -163,9 +163,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const cookies = parseCookies();
     const { "b4you.token": token } = cookies;
 
+
     if (token) {
+
+    api.defaults.headers.Authorization = `Bearer ${token}`;
+
       api
-        .get("/me")
+        .get("/auth/me")
         .then((response) => {
           const data = response.data;
 

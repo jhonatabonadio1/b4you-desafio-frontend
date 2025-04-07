@@ -71,9 +71,9 @@ export function DataTable({data, columns}: DataTableProps<Campaing, Campaing>) {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filtrar campanhas..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("nome")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
+            table.getColumn("nome")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />

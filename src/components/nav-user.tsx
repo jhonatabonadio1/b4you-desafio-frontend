@@ -2,9 +2,7 @@
 "use client"
 
 import {
-Settings,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
 } from "lucide-react"
 
@@ -16,7 +14,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -28,14 +25,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useRouter } from "next/router"
+
 import { useContext } from "react"
 import { AuthContext } from "@/contexts/AuthContext"
 
 
 export function NavUser() {
   const { isMobile } = useSidebar()
-  const route = useRouter();
 
   const {user} = useContext(AuthContext)
 
@@ -86,17 +82,7 @@ export function NavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => route.push("/settings")}>
-                <Settings />
-                Configurações
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {}}>
-                <CreditCard />
-                Gerenciar assinatura
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer">
               <LogOut />

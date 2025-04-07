@@ -88,7 +88,7 @@ export function LoginForm() {
                   <Label htmlFor="password">Senha</Label>
                   <Link
                     className="text-primary hover:underline underline-offset-4"
-                    href="/forgot-password"
+                    href="#"
                   >
                     Esqueceu sua senha?
                   </Link>

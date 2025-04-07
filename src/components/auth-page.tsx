@@ -1,7 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { Icons } from "@/components/icons";
 import { IOptions, RecursivePartial } from "@tsparticles/engine";
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim";
+import { useTheme } from "next-themes";
 
 import Link from "next/link";
 import { ReactNode, useEffect, useMemo, useState } from "react";
@@ -20,6 +22,8 @@ export default function AuthPage({ render }: Props) {
       setInit(true);
     });
   }, []);
+
+  const {  resolvedTheme } = useTheme()
 
 
   const options = useMemo<RecursivePartial<IOptions>>(
@@ -48,10 +52,10 @@ export default function AuthPage({ render }: Props) {
       },
       particles: {
         color: {
-          value: "#ffffff",
+          value: resolvedTheme=== "dark" ? "#999" : "#777",
         },
         links: {
-          color: "#ffffff",
+          color:  resolvedTheme=== "dark" ? "#999" : "#777",
           distance: 150,
           enable: true,
           opacity: 0.5,
@@ -64,7 +68,7 @@ export default function AuthPage({ render }: Props) {
             default: "bounce",
           },
           random: false,
-          speed: 1.5, // velocidade reduzida
+          speed: 1.5,
           straight: false,
         },
         number: {
